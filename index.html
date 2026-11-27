@@ -141,7 +141,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.0.5';
+const VERSION = '1.0.6';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -564,22 +564,34 @@ let driveBusy = false;
 function cachedToken() { try { const t = JSON.parse(sessionStorage.getItem('cp_dtok') || 'null'); return t && t.exp > Date.now() ? t.tok : null; } catch (e) { return null; } }
 function keepToken(tok) { try { sessionStorage.setItem('cp_dtok', JSON.stringify({ tok, exp: Date.now() + 50 * 6e4 })); } catch (e) {} }
 const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || matchMedia('(display-mode: standalone)').matches;
+// Permiso con Google Identity Services (ventanita oficial de Google; no depende del modo de redirección de Firebase)
+const GIS_CLIENT = '1050414768123-kvsikfv6irac7h39opojq24ikhh87r9i.apps.googleusercontent.com';
+let gisP = null, tokenClient = null;
+const gisReady = () => !!(window.google && google.accounts && google.accounts.oauth2);
+const loadGIS = () => gisP || (gisP = new Promise((ok, no) => { if (gisReady()) return ok(); const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = () => ok(); s.onerror = () => { gisP = null; no({ code: 'gis-load' }); }; document.head.appendChild(s); }));
+function requestToken() {
+  return new Promise((ok, no) => {
+    if (!tokenClient) tokenClient = google.accounts.oauth2.initTokenClient({ client_id: GIS_CLIENT, scope: DRIVE_SCOPE, hint: (user && user.email) || '', callback: () => {} });
+    tokenClient.callback = r => (r && r.access_token) ? ok(r.access_token) : no({ code: 'gis-' + ((r && r.error) || 'sin-token') });
+    tokenClient.error_callback = e => no({ code: 'gis-' + ((e && e.type) || 'error') });
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
 async function driveBackup() {
   if (driveBusy) return;
   if (!navigator.onLine) { toast('Necesitas internet para respaldar en Drive'); return; }
   const tok = cachedToken();
   if (tok) return driveUpload(tok);
-  const prov = new A.GoogleAuthProvider(); prov.addScope(DRIVE_SCOPE); prov.setCustomParameters({ login_hint: user.email || '' });
-  try {
-    // Ventana emergente en el mismo dominio (funciona en la app instalada; el modo de redirección pierde el estado en Android)
-    const res = await A.reauthenticateWithPopup(user, prov), cred = A.GoogleAuthProvider.credentialFromResult(res);
-    if (!cred || !cred.accessToken) throw { code: 'no-token' };
-    keepToken(cred.accessToken); await driveUpload(cred.accessToken);
-  } catch (e) { driveErr(e); }
+  if (!gisReady()) { toast('Preparando Google… toca Respaldar otra vez en un momento'); loadGIS().catch(() => toast('No se pudo cargar Google. Revisa tu internet.')); return; }
+  try { const t = await requestToken(); keepToken(t); await driveUpload(t); }
+  catch (e) { driveErr(e); }
 }
 function driveErr(e) {
   driveBusy = false; const c = (e && (e.code || e.status)) || '';
-  const m = c === 'auth/popup-blocked' ? 'El teléfono bloqueó la ventana de Google. Permite ventanas emergentes para esta app e intenta de nuevo.'
+  const m = c === 'gis-popup_failed_to_open' ? 'El teléfono bloqueó la ventana de Google. Permite ventanas emergentes e intenta de nuevo.'
+    : c === 'gis-popup_closed' ? 'Se cerró la ventana de Google antes de terminar. Intenta de nuevo.'
+    : c === 'gis-access_denied' ? 'No se dio permiso para usar Google Drive.'
+    : c === 'auth/popup-blocked' ? 'El teléfono bloqueó la ventana de Google. Permite ventanas emergentes para esta app e intenta de nuevo.'
     : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? 'Se cerró la ventana de Google antes de terminar. Intenta de nuevo.'
     : c === 'auth/user-mismatch' ? 'Elige la misma cuenta de Google con la que entras a la app.'
     : c === 403 && /accessNotConfigured|has not been used|disabled/i.test(e.msg || '') ? 'Falta activar la Google Drive API en Google Cloud.'
@@ -718,6 +730,7 @@ A.onAuthStateChanged(auth, u => {
   user = u;
   if (!u) { unsubs.forEach(x => x()); unsubs = []; COLS.forEach(c => { S[c] = {}; }); document.getElementById('app').innerHTML = vLogin(lastErr); return; }
   subscribe(); render();
+  if (navigator.onLine) setTimeout(() => loadGIS().catch(() => {}), 1500);
 });
 
 /* ---------- Funcionar sin internet ---------- */

@@ -1,5 +1,5 @@
 /* Control Pro · Service Worker: permite abrir la app sin internet. © 2026 Grupo Farav */
-const VERSION = 'cp-v1.0.5';
+const VERSION = 'cp-v1.0.6';
 const SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
 const FB = '10.12.2';
 const LIBS = [
