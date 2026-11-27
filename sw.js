@@ -1,6 +1,6 @@
 /* Control Pro · Service Worker: permite abrir la app sin internet. © 2026 Grupo Farav */
-const VERSION = 'cp-v1.0.8';
-const SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png'];
+const VERSION = 'cp-v1.0.9';
+const SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png', './logo-farav.jpg', './apple-touch-icon.png'];
 const FB = '10.12.2';
 const LIBS = [
   `https://www.gstatic.com/firebasejs/${FB}/firebase-app.js`,
