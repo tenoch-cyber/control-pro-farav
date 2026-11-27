@@ -478,10 +478,11 @@ function saveVenc(renew) {
 function sendWA() {
   const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = pedNow(), env = gv('f_costo');
   if (!ped && !env) { document.getElementById('ferr').textContent = 'Escribe el costo del viaje o el monto del pedido.'; return; }
-  const L = ['*Tu cuenta*' + (lugar && !EXC.includes(norm(lugar)) ? ' · ' + lugar : '')];
+  const hr = new Date().getHours(), sal = hr < 12 ? 'buen día' : hr < 19 ? 'buenas tardes' : 'buenas noches';
+  const L = ['Hola, ' + sal + ' 👋', 'Soy el repartidor asignado para entregar su pedido' + (lugar && !EXC.includes(norm(lugar)) ? ' de *' + lugar + '*.' : '.'), ''];
   if (ped) L.push('Pedido: ' + $r(ped));
   if (env) L.push('Envío: ' + $r(env));
-  L.push('*Total a pagar: ' + $r(ped + env) + '*', '', '¡Gracias por tu preferencia!');
+  L.push('*Total a pagar: ' + $r(ped + env) + '*', '', 'Puede pagar en efectivo, transferencia bancaria o tarjeta (con tarjeta se cobra comisión).', '', '¡Gracias por su preferencia!');
   const tel = (document.getElementById('f_tel') || {}).value || '', n = waNum(tel);
   if (tel.trim() && !n) { document.getElementById('ferr').textContent = 'Revisa el teléfono: deben ser 10 dígitos.'; return; }
   window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
