@@ -1,0 +1,5 @@
+# Nunca subir respaldos con datos personales
+*.json.bak
+respaldo*.json
+ControlPro_respaldo*.json
+*.xlsx
