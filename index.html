@@ -65,6 +65,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 .day{font-size:12px;font-weight:600;color:var(--mute);padding:12px 2px 2px;text-transform:capitalize}
 .seg{display:grid;background:var(--seg);border-radius:12px;padding:4px;gap:4px}
 .seg button{min-height:38px;border:0;border-radius:9px;background:transparent;font-weight:600;font-size:13px;color:var(--mute);cursor:pointer}
+.seg button.pi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;min-height:52px}.seg button.pi svg{width:18px;height:18px}
 .seg button.on{background:var(--segon);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chips button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--seg);font-size:13px;font-weight:500;color:var(--lab);cursor:pointer}
@@ -141,7 +142,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.0.6';
+const VERSION = '1.0.7';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -203,6 +204,9 @@ const I = {
   back: '<path d="M15 18l-6-6 6-6"/>',
   x: '<path d="M18 6L6 18M6 6l12 12"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  xfer: '<path d="M4 8h15l-4-4M20 16H5l4 4"/>',
+  mix: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
   cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
   dl: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
   bag: '<path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/>',
@@ -436,7 +440,8 @@ function openChooser() {
 function openPanel(html) { document.getElementById('panel').innerHTML = html; document.getElementById('sheet').classList.add('open'); renderLock = true; }
 function closeSheet() { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; render(); }
 
-const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" data-ppay="${k}">${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
+const PICO = { efectivo: 'cash', transferencia: 'xfer', tarjeta: 'card', mixto: 'mix' };
+const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" class="pi" data-ppay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
 function openForm(kind, id) {
   const F0 = FORMS[kind], c = F0.c, r = id ? { ...S[c][id] } : { fecha: ['viaje', 'gasto', 'recoger'].includes(kind) ? (tab === 'movs' ? dayView : today()) : today(), cantidad: kind === 'mant' ? 1 : '', monto: kind === 'pagoscc' && ccPend() > 0 ? ccPend() : '' };
   const entregar = kind === 'viaje' && !!id && st(r) === 'camino';
@@ -461,7 +466,7 @@ function openForm(kind, id) {
     <label for="f_cobrado">Total que te pagó el cliente</label><input class="inp" id="f_cobrado" type="number" inputmode="decimal" step="any" value="${hasPed(r) && r.cobrado != null ? esc(r.cobrado) : ''}"><p class="hint" id="cobHint"></p></details>`;
   const m = r.montos || {};
   const title = entregar ? 'Entregar pedido' : cancelado ? 'Pedido cancelado' : (id ? 'Editar: ' : 'Nuevo: ') + F0.t;
-  const payBlock = kind === 'recoger' ? '' : `<label id="payLbl">${kind === 'viaje' ? 'Método de pago' : '¿Cómo pagaste?'}</label><div class="seg" style="grid-template-columns:repeat(4,1fr)" role="group" aria-label="Método de pago">${Object.keys(PAGOS).map(k => `<button type="button" data-pay="${k}">${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>
+  const payBlock = kind === 'recoger' ? '' : `<label id="payLbl">${kind === 'viaje' ? 'Método de pago' : '¿Cómo pagaste?'}</label><div class="seg" style="grid-template-columns:repeat(4,1fr)" role="group" aria-label="Método de pago">${Object.keys(PAGOS).map(k => `<button type="button" class="pi" data-pay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>
   <div class="mix" id="mixBox" hidden><div class="g3">${K3.map(k => `<div><label for="m_${k}">${PAGOS[k]}</label><input class="inp" id="m_${k}" type="number" inputmode="decimal" step="any" value="${m[k] ? esc(m[k]) : ''}"></div>`).join('')}</div><p class="hint" id="mixSum"></p></div>`;
   const saveTxt = entregar ? 'Entregar y guardar' : kind === 'recoger' && !id ? 'Guardar · voy en camino' : id ? 'Guardar cambios' : 'Guardar ' + F0.t.toLowerCase();
   openPanel(`<form id="frm" novalidate><div class="ph"><b>${title}</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
