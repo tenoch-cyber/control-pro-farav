@@ -87,6 +87,7 @@ svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-l
 table{border-collapse:collapse;width:100%;font-size:12px}
 th,td{padding:8px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2)}
 th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}
+.btn.wa{background:#0b2e1c;border-color:#165c36;color:#4ade80}
 .alert{display:flex;gap:10px;align-items:center;background:var(--ambbg);border:1px solid #4a3410;color:#fedf89;border-radius:14px;padding:12px 14px;font-size:13px;margin-top:12px}
 .empty{color:var(--mute);text-align:center;padding:22px 8px;font-size:14px}
 .foot{font-size:11px;color:var(--dim);padding:18px 4px 4px}
@@ -143,7 +144,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.0.9';
+const VERSION = '1.1.0';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -166,8 +167,8 @@ catch (e) { fs = F.getFirestore(app); }
 
 /* ---------- Estado ---------- */
 if (/netlify\.app$/.test(location.hostname)) document.body.classList.add('nb');
-const COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc', 'meta'];
-const DATA_COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc'];
+const COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc', 'venc', 'meta'];
+const DATA_COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc', 'venc'];
 const EXC = ['vigs', 'turepa', 'personal', 'gasto'];
 const K3 = ['efectivo', 'transferencia', 'tarjeta'];
 const PAGOS = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta', mixto: 'Mixto' };
@@ -180,7 +181,10 @@ function today() { const d = new Date(); return new Date(d - d.getTimezoneOffset
 const iso = d => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
-const $m = n => (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let hideAmt = false; try { hideAmt = localStorage.getItem('cp_hide') === '1'; } catch (e) {}
+const sheetOpen = () => { const s = document.getElementById('sheet'); return !!(s && s.classList.contains('open')); };
+const $r = n => (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const $m = n => hideAmt && !sheetOpen() ? '$ ••••' : (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const f1 = n => num(n).toLocaleString('es-MX', { maximumFractionDigits: 1 });
 const norm = s => String(s || '').trim().toLowerCase();
 const isG = v => norm(v.lugar) === 'gasto';
@@ -204,6 +208,10 @@ const I = {
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   back: '<path d="M15 18l-6-6 6-6"/>',
   x: '<path d="M18 6L6 18M6 6l12 12"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  wa: '<path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a5 5 0 0 1-2.7-2.7l.8-1-1-2z"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
   xfer: '<path d="M4 8h15l-4-4M20 16H5l4 4"/>',
@@ -248,7 +256,11 @@ function caja(d) {
 }
 function gasRows() { const r = live('gasolina').sort((a, b) => num(a.km) - num(b.km) || String(a.fecha).localeCompare(b.fecha)); return r.map((g, i) => { const kmr = i ? num(g.km) - num(r[i - 1].km) : null; return { ...g, kmr, rend: kmr && num(g.litros) ? kmr / num(g.litros) : null, cpk: kmr ? num(g.importe) / kmr : null }; }); }
 const odo = () => live('gasolina').concat(live('mant')).reduce((m, r) => Math.max(m, num(r.km)), 0);
-function alerts() { const o = odo(), t = today(), out = []; for (const m of live('mant')) { if (m.proxKm && o && o >= num(m.proxKm) - 300) out.push(`${esc(m.servicio || 'Servicio')}: toca a los ${num(m.proxKm).toLocaleString('es-MX')} km (vas en ${o.toLocaleString('es-MX')})`); if (m.proxFecha && m.proxFecha <= t) out.push(`${esc(m.servicio || 'Servicio')}: fecha programada ${fdate(m.proxFecha)}`); } return [...new Set(out)].map(a => `<div class="alert">${ic('wrench')}<span>${a}</span></div>`).join(''); }
+const VPRE = ['Seguro', 'Tarjeta de circulación', 'Licencia', 'Verificación', 'Refrendo / tenencia'];
+const daysTo = f => Math.round((new Date(f + 'T12:00') - new Date(today() + 'T12:00')) / 864e5);
+const vencTxt = r => { const d = daysTo(r.fecha); return d < 0 ? ['Vencido hace ' + (-d) + (d === -1 ? ' día' : ' días'), 'var(--bad)', 'var(--badbg)'] : d === 0 ? ['Vence hoy', 'var(--bad)', 'var(--badbg)'] : d <= 30 ? ['Vence en ' + d + (d === 1 ? ' día' : ' días'), 'var(--amb)', 'var(--ambbg)'] : ['Vence el ' + fdate(r.fecha, { day: 'numeric', month: 'short', year: 'numeric' }), 'var(--mute)', 'var(--seg)']; };
+const vencList = () => live('venc').filter(r => r.fecha).sort((a, b) => a.fecha.localeCompare(b.fecha));
+function alerts() { const o = odo(), t = today(), out = []; for (const v of vencList()) { const d = daysTo(v.fecha); if (d <= 15) out.push(`\u0001${esc(v.nombre || 'Documento')}: ${d < 0 ? 'vencido desde el ' + fdate(v.fecha, { day: 'numeric', month: 'short' }) : d === 0 ? 'vence hoy' : 'vence en ' + d + (d === 1 ? ' día' : ' días')}`); } for (const m of live('mant')) { if (m.proxKm && o && o >= num(m.proxKm) - 300) out.push(`${esc(m.servicio || 'Servicio')}: toca a los ${num(m.proxKm).toLocaleString('es-MX')} km (vas en ${o.toLocaleString('es-MX')})`); if (m.proxFecha && m.proxFecha <= t) out.push(`${esc(m.servicio || 'Servicio')}: fecha programada ${fdate(m.proxFecha)}`); } return [...new Set(out)].map(a => `<div class="alert">${ic(a[0] === '\u0001' ? 'cal' : 'wrench')}<span>${a.replace('\u0001', '')}</span></div>`).join(''); }
 function payTxt(c, v) { if (!v.pago || !PAGOS[v.pago]) return 'Sin forma de pago'; if (v.pago !== 'mixto' || !v.montos) return PAGOS[v.pago]; return 'Mixto: ' + K3.filter(k => num(v.montos[k])).map(k => PAGOS[k] + ' ' + $m(v.montos[k])).join(' + '); }
 
 /* Movimientos unificados (estilo estado de cuenta) */
@@ -299,14 +311,15 @@ addEventListener('online', () => render()); addEventListener('offline', () => re
 
 /* ---------- Vistas ---------- */
 const foot = `<div class="foot">Control Pro · © 2026 Grupo Farav</div>`;
+const eyeBtn = () => `<button class="ibtn" type="button" data-act="hide" aria-label="${hideAmt ? 'Mostrar montos' : 'Ocultar montos'}">${ic(hideAmt ? 'eyeoff' : 'eye')}</button>`;
 const gearBtn = `<button class="ibtn" type="button" data-go="acerca" aria-label="Ajustes y acerca de">${ic('gear')}</button>`;
-const titleBar = t => `<div class="hdr"><div class="t"><b>${t}</b></div><div class="hdr-r">${syncPill()}${gearBtn}</div></div>`;
+const titleBar = t => `<div class="hdr"><div class="t"><b>${t}</b></div><div class="hdr-r">${syncPill()}${eyeBtn()}${gearBtn}</div></div>`;
 
 function vInicio() {
   const t = today(), w = sumRange(weekStart(), t), h = sumDay(live('viajes').filter(v => v.fecha === t), gasOn(t)), c = caja(t), pend = ccPend();
   const recent = movs().slice(0, 6);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  return `<div class="hdr"><div class="t"><small>${esc(fdate(t, { weekday: 'long', day: 'numeric', month: 'long' }))}</small><b>Control Pro</b></div><div class="hdr-r">${syncPill()}${gearBtn}</div></div>
+  return `<div class="hdr"><div class="t"><small>${esc(fdate(t, { weekday: 'long', day: 'numeric', month: 'long' }))}</small><b>Control Pro</b></div><div class="hdr-r">${syncPill()}${eyeBtn()}${gearBtn}</div></div>
   <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$m(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
   <div class="sub"><div><small>Hoy</small><b>${$m(h.real)}</b></div><div><small>Ganancia neta</small><b>${$m(w.neta)}</b></div></div></div>
   <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
@@ -382,6 +395,7 @@ function vMoto() {
   const m = live('mant').sort((a, b) => String(b.fecha).localeCompare(a.fecha)), tot = m.reduce((a, r) => a + mantTot(r), 0);
   return titleBar('Moto') + `<div class="stats"><div class="stat"><span class="lbl">Rendimiento</span><b>${Lr ? f1(K / Lr) + ' km/L' : '—'}</b></div><div class="stat"><span class="lbl">Costo por km</span><b>${K ? $m($r / K) : '—'}</b></div><div class="stat"><span class="lbl">Odómetro</span><b>${odo().toLocaleString('es-MX')} km</b></div><div class="stat"><span class="lbl">Gasolina total</span><b class="gout">${$m($g)}</b></div></div>${alerts()}
   <div class="g2 mt" style="gap:10px"><button class="btn" type="button" data-new="gasolina">${ic('fuel')} Gasolina</button><button class="btn" type="button" data-new="mant">${ic('wrench')} Servicio</button></div>
+  <div class="card mt"><div class="sec"><b>Vencimientos</b><button type="button" data-act="vnew">+ Agregar</button></div>${(() => { const l = vencList(); return l.length ? l.map(r => { const [t, fg, bg] = vencTxt(r); return `<button class="mv" type="button" data-venc="${esc(r.id)}"><span class="ico" style="background:${bg};color:${fg}">${ic('cal')}</span><span class="tx"><b>${esc(r.nombre || 'Documento')}</b><small style="color:${fg}">${esc(t)}</small></span><span class="lbl">${esc(fdate(r.fecha, { day: 'numeric', month: 'short', year: '2-digit' }))}</span></button>`; }).join('') : '<div class="empty">Agrega el seguro, la licencia, la verificación… y te aviso antes de que se venzan.</div>'; })()}</div>
   <div class="card mt"><div class="sec"><b>Cargas de gasolina</b></div>${g.length ? g.slice().reverse().map(r => mvHtml({ c: 'gasolina', r, ico: 'fuel', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: fdate(r.fecha) + ' · ' + f1(r.litros) + ' L', s: num(r.km).toLocaleString('es-MX') + ' km' + (r.kmr != null ? ' · ' + r.kmr + ' km' + (r.rend ? ' · ' + f1(r.rend) + ' km/L' : '') : ' · primera carga'), a: -num(r.importe) })).join('') : '<div class="empty">Sin cargas registradas.</div>'}<p class="hint">Llena el tanque al mismo nivel para que el km/L sea confiable.</p></div>
   <div class="card mt"><div class="sec"><b>Taller</b><span class="lbl">Total ${$m(tot)}</span></div>${m.length ? m.map(r => mvHtml({ c: 'mant', r, ico: 'wrench', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: r.servicio || r.producto || 'Registro', s: [fdate(r.fecha), r.tipo, r.km ? num(r.km).toLocaleString('es-MX') + ' km' : '', r.proveedor, r.proxKm ? 'próximo ' + num(r.proxKm).toLocaleString('es-MX') + ' km' : ''].filter(Boolean).join(' · '), a: -mantTot(r) })).join('') : '<div class="empty">Sin servicios registrados.</div>'}</div>${foot}`;
 }
@@ -441,6 +455,35 @@ function openChooser() {
 function openPanel(html) { document.getElementById('panel').innerHTML = html; document.getElementById('sheet').classList.add('open'); renderLock = true; }
 function closeSheet() { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; render(); }
 
+function openVenc(id) {
+  const r = id ? { ...S.venc[id] } : { nombre: '', fecha: '', nota: '' };
+  form = { kind: 'venc', id, del: false };
+  openPanel(`<form id="vfrm" novalidate><div class="ph"><b>${id ? 'Editar vencimiento' : 'Nuevo vencimiento'}</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
+  <label for="v_nombre">¿Qué vence? *</label><input class="inp" id="v_nombre" value="${esc(r.nombre)}" placeholder="Ej. Seguro de la moto"><div class="chips" style="margin-top:8px">${VPRE.map(x => `<button type="button" data-vchip="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+  <label for="v_fecha">Fecha en que vence *</label><input class="inp" id="v_fecha" type="date" value="${esc(r.fecha)}">
+  <label for="v_nota">Nota (opcional)</label><input class="inp" id="v_nota" value="${esc(r.nota || '')}" placeholder="Ej. Póliza Qualitas, cuesta ~$1,800">
+  <p class="hint">Te aviso en Inicio desde 15 días antes.</p><p class="hint" id="verr" style="color:var(--bad)"></p>
+  <button class="btn wide pri" type="button" data-act="vsave" style="margin-top:14px">${id ? 'Guardar cambios' : 'Guardar'}</button>
+  ${id ? `<button class="btn wide" type="button" data-act="vrenew" style="margin-top:8px">Ya lo renové · vence en 1 año</button><button class="btn wide dng" type="button" data-act="vdel" style="margin-top:8px">Eliminar</button>` : ''}</form>`);
+}
+function saveVenc(renew) {
+  const nombre = document.getElementById('v_nombre').value.trim(), nota = document.getElementById('v_nota').value.trim();
+  let fecha = document.getElementById('v_fecha').value;
+  if (renew && fecha) { const d = new Date(fecha + 'T12:00'); d.setFullYear(d.getFullYear() + 1); fecha = iso(d); }
+  if (!nombre || !fecha) { document.getElementById('verr').textContent = 'Escribe qué vence y la fecha.'; return; }
+  const prev = form.id ? S.venc[form.id] : { id: newId('vn') };
+  save('venc', { ...prev, nombre, fecha, nota }); closeSheet();
+  toast(renew ? 'Renovado: ahora vence el ' + fdate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Vencimiento guardado');
+}
+function sendWA() {
+  const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = pedNow(), env = gv('f_costo');
+  if (!ped && !env) { document.getElementById('ferr').textContent = 'Escribe el costo del viaje o el monto del pedido.'; return; }
+  const L = ['*Tu cuenta*' + (lugar && !EXC.includes(norm(lugar)) ? ' · ' + lugar : '')];
+  if (ped) L.push('Pedido: ' + $r(ped));
+  if (env) L.push('Envío: ' + $r(env));
+  L.push('*Total a pagar: ' + $r(ped + env) + '*', '', '¡Gracias por tu preferencia!');
+  window.open('https://wa.me/?text=' + encodeURIComponent(L.join('\n')), '_blank');
+}
 const PICO = { efectivo: 'cash', transferencia: 'xfer', tarjeta: 'card', mixto: 'mix' };
 const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" class="pi" data-ppay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
 function openForm(kind, id) {
@@ -474,6 +517,7 @@ function openForm(kind, id) {
   ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')} · adelantaste ${$m(r.pedido)} en ${esc((PAGOS[r.pedidoPago] || '').toLowerCase())}</span></div>` : ''}
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}</div>
   ${body}${payBlock}
+  ${kind === 'viaje' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
   <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
   ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}
@@ -549,6 +593,7 @@ async function buildXLS() {
   add('Resumen diario', [['Fecha', 'Pedidos', 'Ingresos', 'Propinas', 'Gasolina', 'Gastos', 'Pérdidas en pedidos', 'Dinero real', 'Call Center', 'Ganancia neta', 'Fondo fijo', 'Efectivo en mano']].concat(days.map(d => { const x = sumDay(live('viajes').filter(v => v.fecha === d), gasOn(d)), c = caja(d); return [d, x.p, x.ing, x.tip, x.gl, x.gas, x.perd, x.real, x.cc, x.neta, c.fondo, c.mano]; })));
   add('Gasolina', [['Fecha', 'Kilometraje', 'Litros', 'Importe', 'Km recorridos', 'km/L', 'Costo por km', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(gasRows().map(r => [r.fecha, num(r.km), num(r.litros), num(r.importe), r.kmr ?? '', r.rend ? +r.rend.toFixed(2) : '', r.cpk ? +r.cpk.toFixed(3) : '', ...pagoCols('gasolina', r)])));
   add('Taller', [['Fecha', 'Kilometraje', 'Tipo', 'Servicio', 'Producto', 'Cantidad', 'Precio unitario', 'Total', 'Proveedor', 'Próximo (km)', 'Próxima fecha', 'Observaciones', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(by('mant').map(r => [r.fecha, r.km ?? '', r.tipo || '', r.servicio || '', r.producto || '', num(r.cantidad || 1), num(r.precio), mantTot(r), r.proveedor || '', r.proxKm ?? '', r.proxFecha || '', r.obs || '', ...pagoCols('mant', r)])));
+  add('Vencimientos', [['Qué vence', 'Fecha', 'Nota']].concat(vencList().map(r => [r.nombre || '', r.fecha, r.nota || ''])));
   add('Abonos Call Center', [['Fecha', 'Monto', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta', 'Nota']].concat(by('pagoscc').map(r => [r.fecha, num(r.monto), ...pagoCols('pagoscc', r), r.nota || ''])));
   add('Fondos fijos', [['Fecha', 'Fondo fijo']].concat(by('fondos').map(f => [f.fecha, num(f.monto)])));
   return new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: XLSX_MIME });
@@ -672,6 +717,8 @@ document.addEventListener('click', async e => {
   if (d.entregar) { if (S.viajes[d.entregar]) openForm('viaje', d.entregar); return; }
   if (d.ppay) { form.ppay = d.ppay; try { localStorage.setItem('cp_ppay', d.ppay); } catch (x) {} updForm(); return; }
   if (d.pay) { form.pay = d.pay; try { localStorage.setItem('cp_pay', d.pay); } catch (x) {} updForm(); return; }
+  if (d.venc) { if (S.venc[d.venc]) openVenc(d.venc); return; }
+  if (d.vchip) { document.getElementById('v_nombre').value = d.vchip; return; }
   if (d.chip) { document.getElementById('f_lugar').value = d.chip; updForm(); return; }
   if (d.fp) { fPay = d.fp; render(); return; }
   if (d.fall) { fAll = d.fall === '1'; render(); return; }
@@ -683,6 +730,12 @@ document.addEventListener('click', async e => {
     case 'savemore': submitForm(true); break;
     case 'del': { if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para eliminar'; return; } const c = FORMS[form.kind].c, prev = { ...S[c][form.id] }; save(c, { ...prev, deleted: true }); closeSheet(); toast('Registro eliminado', () => { const r = { ...prev }; delete r.deleted; save(c, r); }); break; }
     case 'cancelped': { if (!form.cancel) { form.cancel = true; b.textContent = 'Toca otra vez: el pedido se canceló'; return; } const prev = { ...S.viajes[form.id] }; save('viajes', { ...prev, estado: 'cancelado' }); closeSheet(); toast('Pedido cancelado · se registra la pérdida', () => save('viajes', { ...prev, estado: 'camino' })); break; }
+    case 'hide': hideAmt = !hideAmt; try { localStorage.setItem('cp_hide', hideAmt ? '1' : '0'); } catch (x) {} render(); break;
+    case 'vnew': openVenc(); break;
+    case 'vsave': saveVenc(false); break;
+    case 'vrenew': saveVenc(true); break;
+    case 'vdel': { if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para eliminar'; return; } const prev = { ...S.venc[form.id] }; save('venc', { ...prev, deleted: true }); closeSheet(); toast('Vencimiento eliminado', () => save('venc', { ...prev, deleted: false })); break; }
+    case 'wa': sendWA(); break;
     case 'xls': exportXLS(); break;
     case 'json': exportJSON(); break;
     case 'drivebk': driveBackup(); break;
@@ -696,7 +749,7 @@ document.addEventListener('click', async e => {
 });
 function closeIfOpen() { if (document.getElementById('sheet').classList.contains('open')) { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; } }
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
-document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } });
+document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } });
 document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
 document.addEventListener('change', e => {
   if (e.target.id === 'dayIn' && e.target.value) { dayView = e.target.value; render(); }
