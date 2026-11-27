@@ -1,0 +1,31 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# El inicio de sesión con Google pasa por este mismo dominio (necesario en celulares y app instalada)
+[[redirects]]
+  from = "/__/auth/*"
+  to = "https://control-pro-2c97d.firebaseapp.com/__/auth/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/__/firebase/*"
+  to = "https://control-pro-2c97d.firebaseapp.com/__/firebase/:splat"
+  status = 200
+  force = true
