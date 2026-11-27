@@ -147,7 +147,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.1.4';
+const VERSION = '1.2.0';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -215,6 +215,7 @@ const I = {
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
   wa: '<path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a5 5 0 0 1-2.7-2.7l.8-1-1-2z"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
@@ -274,7 +275,7 @@ function movs(filterFn) {
     if (isG(v)) out.push({ c: 'viajes', r: v, ico: 'out', cls: 'gout', bg: 'var(--badbg)', fg: 'var(--bad)', t: v.nota || 'Gasto', s: 'Gasto · ' + payTxt('viajes', v), a: -num(v.costo) });
     else if (st(v) === 'camino') out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gcc', bg: 'var(--ambbg)', fg: 'var(--amb)', t: v.lugar || 'Pedido', s: 'En camino · adelantaste ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || 'sin forma') + ')', a: -num(v.pedido) });
     else if (st(v) === 'cancelado') out.push({ c: 'viajes', r: v, ico: 'x', cls: 'gout', bg: 'var(--badbg)', fg: 'var(--bad)', t: (v.lugar || 'Pedido') + ' · cancelado', s: 'Pedido cancelado · perdiste ' + $m(v.pedido), a: -num(v.pedido) });
-    else { const d = difOf(v); out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gin', bg: 'var(--blubg)', fg: 'var(--link)', t: v.lugar || 'Viaje', s: [hasPed(v) ? 'pedido ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || '?') + ')' : '', num(v.tips) ? 'propina ' + $m(v.tips) : '', d < -0.009 ? 'pagó ' + $m(-d) + ' de menos' : d > 0.009 ? 'pagó ' + $m(d) + ' de más' : '', payTxt('viajes', v), ccOf(v) ? '' : 'sin Call Center', v.nota || ''].filter(Boolean).join(' · '), a: num(v.costo) }); }
+    else { const d = difOf(v); out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gin', bg: 'var(--blubg)', fg: 'var(--link)', t: v.lugar || 'Viaje', s: [hasPed(v) ? 'pedido ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || '?') + ')' : '', num(v.tips) ? 'propina ' + $m(v.tips) : '', d < -0.009 ? 'pagó ' + $m(-d) + ' de menos' : d > 0.009 ? 'pagó ' + $m(d) + ' de más' : '', num(v.km) ? kmTxt(v.km) : '', payTxt('viajes', v), ccOf(v) ? '' : 'sin Call Center', v.nota || ''].filter(Boolean).join(' · '), a: num(v.costo) }); }
   }
   for (const g of live('gasolina')) out.push({ c: 'gasolina', r: g, ico: 'fuel', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: 'Gasolina · ' + f1(g.litros) + ' L', s: num(g.km).toLocaleString('es-MX') + ' km · ' + payTxt('gasolina', g), a: -num(g.importe) });
   for (const m of live('mant')) out.push({ c: 'mant', r: m, ico: 'wrench', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: m.servicio || m.producto || 'Taller', s: (m.tipo || 'Taller') + ' · ' + payTxt('mant', m), a: -mantTot(m) });
@@ -338,7 +339,7 @@ function vInicio() {
 
 function caminoCard() {
   const l = enCamino(); if (!l.length) return '';
-  return `<div class="card mt" style="border-color:#4a3410"><div class="sec"><b>En camino (${l.length})</b><span class="lbl">Por cobrar <b style="color:var(--amb)">${$m(porCobrar())}</b></span></div>${l.map(v => `<button class="mv" type="button" data-entregar="${esc(v.id)}"><span class="ico" style="background:var(--ambbg);color:var(--amb)">${ic('bag')}</span><span class="tx"><b>${esc(v.lugar || 'Pedido')}</b><small>Adelantaste ${$m(v.pedido)} · ${esc(PAGOS[v.pedidoPago] || '')}${v.fecha !== today() ? ' · ' + esc(dayLabel(v.fecha)) : ''}</small></span><span class="btn light" style="min-height:36px;padding:0 12px;font-size:13px">Entregar</span></button>`).join('')}</div>`;
+  return `<div class="card mt" style="border-color:#4a3410"><div class="sec"><b>En camino (${l.length})</b><span class="lbl">Por cobrar <b style="color:var(--amb)">${$m(porCobrar())}</b></span></div>${l.map(v => `<button class="mv" type="button" data-entregar="${esc(v.id)}"><span class="ico" style="background:var(--ambbg);color:var(--amb)">${ic('bag')}</span><span class="tx"><b>${esc(v.lugar || 'Pedido')}</b><small>${hasPed(v) ? 'Adelantaste ' + $m(v.pedido) + ' · ' + esc(PAGOS[v.pedidoPago] || '') : 'Sin pedido adelantado'}${v.fecha !== today() ? ' · ' + esc(dayLabel(v.fecha)) : ''}</small></span><span class="btn light" style="min-height:36px;padding:0 12px;font-size:13px">Entregar</span></button>`).join('')}</div>`;
 }
 function cajaCard(d) {
   const c = caja(d);
@@ -388,6 +389,7 @@ function vReportes() {
   <div class="card mt"><div class="kv"><span>Ingresos de viajes</span><b class="gin">+${$m(s.ing)}</b></div><div class="kv"><span>Propinas</span><b class="gin">+${$m(s.tip)}</b></div><div class="kv"><span>Gasolina</span><b class="gout">−${$m(s.gl)}</b></div><div class="kv"><span>Gastos</span><b class="gout">−${$m(s.gas)}</b></div>${s.perd ? `<div class="kv"><span>Pérdidas en pedidos</span><b class="gout">−${$m(s.perd)}</b></div>` : ''}<div class="kv tot"><span>Dinero real</span><b>${$m(s.real)}</b></div><div class="kv"><span>Call Center generado</span><b class="gcc">−${$m(s.cc)}</b></div><div class="kv tot"><span>Ganancia neta</span><b>${$m(s.neta)}</b></div></div>
   ${s.ade || porCobrar() ? `<div class="card mt"><div class="sec"><b>Pedidos que adelantaste</b></div><div class="kv"><span>Dinero adelantado en el periodo</span><b>${$m(s.ade)}</b></div><div class="kv"><span>Por cobrar ahora (en camino)</span><b style="color:var(--amb)">${$m(porCobrar())}</b></div><p class="hint">Lo que adelantas en pedidos no es ganancia ni gasto: entra y sale. Solo cuenta como pérdida si el pedido se cancela o el cliente paga de menos.</p></div>` : ''}
   <div class="card mt"><div class="sec"><b>Cómo te pagaron</b></div>${[['efectivo', 'Efectivo'], ['transferencia', 'Transferencia'], ['tarjeta', 'Tarjeta'], ['sin', 'Sin forma de pago']].filter(([k]) => k !== 'sin' || cb.sin).map(([k, l]) => `<div class="kv"><span>${l}</span><b>${$m(cb[k])}</b></div>`).join('')}<p class="hint">Todo lo que te pagaron los clientes (viaje, propina y pedidos que adelantaste). Los pagos mixtos se reparten en cada forma.</p></div>
+  ${(() => { const mv = s.rows.filter(v => done(v) && !isG(v) && num(v.km) > 0), tot = s.rows.filter(v => done(v) && !isG(v)).length; if (!mv.length) return ''; const k = mv.reduce((x, v) => x + num(v.km), 0), g = mv.reduce((x, v) => x + num(v.costo) + num(v.tips), 0); return `<div class="card mt"><div class="sec"><b>Recorridos con GPS</b><span class="lbl">${mv.length} de ${tot} viajes</span></div><div class="kv"><span>Km recorridos</span><b>${kmTxt(k)}</b></div><div class="kv"><span>Promedio por viaje</span><b>${kmTxt(k / mv.length)}</b></div><div class="kv tot"><span>Ganas por km</span><b class="gin">${$m(g / k)}</b></div><p class="hint">Del negocio al cliente, por calles. Ganancia = viaje + propina de los viajes medidos.</p></div>`; })()}
   <div class="card mt"><div class="sec"><b>Call Center</b><button type="button" data-new="pagoscc">Abonar</button></div><div class="kv"><span>Generado (todo)</span><b>${$m(ccGen())}</b></div><div class="kv"><span>Pagado</span><b>${$m(ccPagado())}</b></div><div class="kv tot"><span>Por pagar</span><b style="color:var(--amb)">${$m(ccPend())}</b></div>${pg.length ? '<div class="day">Abonos</div>' + pg.map(p => mvHtml({ c: 'pagoscc', r: p, ico: 'phone', cls: 'gcc', bg: 'var(--ambbg)', fg: 'var(--amb)', t: fdate(p.fecha), s: payTxt('pagoscc', p), a: -num(p.monto) })).join('') : ''}</div>
   <div class="card mt"><div class="kv"><span>Taller en el periodo</span><b>${$m(mt)}</b></div><p class="hint">El taller se muestra aparte y no se resta de la ganancia. La gasolina sí.</p></div>
   <div class="card mt"><div class="sec"><b>Resumen diario</b></div><div class="tbl"><table><thead><tr><th>Fecha</th><th>Pedidos</th><th>Ingresos</th><th>Propinas</th><th>Gasolina</th><th>Gastos</th><th>Real</th><th>Call C.</th><th>Neta</th></tr></thead><tbody>${days.map(d => { const x = sumDay(s.rows.filter(r => r.fecha === d), gasOn(d)); return `<tr><td>${esc(fdate(d))}</td><td>${x.p}</td><td>${$m(x.ing)}</td><td>${$m(x.tip)}</td><td>${$m(x.gl)}</td><td>${$m(x.gas)}</td><td><b>${$m(x.real)}</b></td><td>${$m(x.cc)}</td><td>${$m(x.neta)}</td></tr>`; }).join('') || '<tr><td colspan="9">Sin datos en este periodo.</td></tr>'}</tbody></table></div></div>
@@ -443,7 +445,7 @@ let renderLock = false;
 /* ---------- Formularios ---------- */
 const TIPOS = ['Servicio', 'Reparación', 'Compra de refacción', 'Otro'];
 const FORMS = {
-  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Monto del pedido que pagaste'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['costo', 'Costo del envío (opcional)', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Pedido que pagaste (vacío si no pagaste)'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['costo', 'Costo del envío (opcional)', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   gasto: { c: 'viajes', p: 'v', t: 'Gasto', big: ['costo', 'Monto del gasto'], f: [['nota', 'Concepto', 'text'], ['fecha', 'Fecha', 'date']] },
   gasolina: { c: 'gasolina', p: 'g', t: 'Carga de gasolina', big: ['importe', 'Importe'], f: [['km', 'Kilometraje actual (km)', 'number', 1], ['litros', 'Litros cargados', 'number', 1], ['fecha', 'Fecha', 'date']] },
@@ -520,6 +522,51 @@ function lugChips(q) {
   return l.map(x => `<button type="button" data-chip="${esc(x)}">${esc(x)}</button>`).join('') + (f && !l.length && !lug.some(x => fold(x) === f) ? '<span class="hint" style="margin:4px 2px">Lugar nuevo: se guardará para la próxima.</span>' : '');
 }
 const waNum = t => { let d = String(t || '').replace(/\D/g, ''); if (d.length === 10) d = '52' + d; return d.length >= 11 ? d : ''; };
+/* ---------- GPS: punto de recogida y de entrega ---------- */
+let geoErr = 0;
+const kmTxt = k => num(k).toLocaleString('es-MX', { maximumFractionDigits: 1 }) + ' km';
+function getPos() {
+  return new Promise(ok => {
+    if (!('geolocation' in navigator)) { geoErr = 9; return ok(null); }
+    navigator.geolocation.getCurrentPosition(p => { geoErr = 0; ok({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6), acc: Math.round(p.coords.accuracy || 0), t: Date.now() }); }, e => { geoErr = (e && e.code) || 2; ok(null); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 });
+  });
+}
+const recta = (a, b) => { const R = 6371, r = x => x * Math.PI / 180, dLa = r(b.lat - a.lat), dLo = r(b.lng - a.lng); const s = Math.sin(dLa / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(s)); };
+const mapsUrl = v => v.gpsA && v.gpsB ? `https://www.google.com/maps/dir/?api=1&origin=${v.gpsA.lat},${v.gpsA.lng}&destination=${v.gpsB.lat},${v.gpsB.lng}&travelmode=driving` : v.gpsA ? `https://www.google.com/maps/search/?api=1&query=${v.gpsA.lat},${v.gpsA.lng}` : '';
+const routing = new Set();
+async function routeKm(id) {
+  const v = S.viajes[id]; if (!v || !v.gpsA || !v.gpsB || v.kmTipo === 'ruta' || routing.has(id) || !navigator.onLine) return;
+  routing.add(id);
+  try {
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 12000);
+    const r = await fetch(`https://router.project-osrm.org/route/v1/driving/${v.gpsA.lng},${v.gpsA.lat};${v.gpsB.lng},${v.gpsB.lat}?overview=false`, { signal: ac.signal });
+    clearTimeout(tm); const j = await r.json();
+    const m = j && j.code === 'Ok' && j.routes && j.routes[0] && j.routes[0].distance;
+    if (m != null && S.viajes[id]) { save('viajes', { ...S.viajes[id], km: Math.round(m / 100) / 10, kmTipo: 'ruta' }); }
+  } catch (e) { } finally { routing.delete(id); }
+}
+function routePending() { if (!navigator.onLine) return; live('viajes').filter(v => v.gpsA && v.gpsB && v.kmTipo !== 'ruta').slice(0, 5).forEach(v => routeKm(v.id)); }
+window.addEventListener('online', () => setTimeout(routePending, 2000));
+async function captureGps(id, field) {
+  const pos = await getPos();
+  if (!pos) { toast(geoErr === 1 ? 'Sin permiso de ubicación: actívalo para medir los km' : 'No se pudo tomar la ubicación (GPS)'); return; }
+  const cur = S.viajes[id]; if (!cur) return;
+  const rec = { ...cur, [field]: pos };
+  if (rec.gpsA && rec.gpsB) { rec.km = Math.round(recta(rec.gpsA, rec.gpsB) * 10) / 10; rec.kmTipo = 'recta'; }
+  save('viajes', rec);
+  if (rec.gpsA && rec.gpsB) routeKm(id);
+}
+function gpsNote(r, mode, id) {
+  const a = r.gpsA, b = r.gpsB, url = mapsUrl(r);
+  let t;
+  if (a && b) t = `Recorrido: <b>${kmTxt(r.km)}</b> ${r.kmTipo === 'ruta' ? 'por calles' : 'en línea recta (se ajusta por calles al tener señal)'}`;
+  else if (a && mode === 'entregar') t = 'Ubicación de recogida guardada. Al entregar se toma tu ubicación para calcular los km.';
+  else if (a) t = 'Ubicación de recogida guardada.';
+  else if (mode === 'recoger' && !id) t = 'Al guardar se toma tu ubicación (punto de recogida).';
+  else if (mode === 'entregar') t = 'Sin ubicación de recogida: este viaje no tendrá km.';
+  else return '';
+  return `<div class="note" style="margin-top:12px"><span style="color:var(--link)">${ic('pin')}</span><span>${t}${url ? ` · <a href="${url}" target="_blank" rel="noopener" style="color:var(--link)">Ver en Maps</a>` : ''}</span></div>`;
+}
 const PICO = { efectivo: 'cash', transferencia: 'xfer', tarjeta: 'card', mixto: 'mix' };
 const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" class="pi" data-ppay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
 function openForm(kind, id) {
@@ -540,7 +587,7 @@ function openForm(kind, id) {
   const paired = new Set(pairs.flat());
   let body = '';
   for (const f of F0.f) { if (paired.has(f[0])) { const p = pairs.find(p => p[0] === f[0]); if (p) body += `<div class="g2"><div>${fld(F0.f.find(x => x[0] === p[0]))}</div><div>${fld(F0.f.find(x => x[0] === p[1]))}</div></div>`; continue; } body += fld(f); }
-  if (kind === 'recoger') body += `<label>¿Cómo pagaste el pedido? *</label>${ppaySeg()}<p class="hint">Al entregar, abre el pedido desde “En camino” en Inicio y captura tu viaje y cómo te pagó el cliente.</p>`;
+  if (kind === 'recoger') body += `<label>¿Cómo pagaste el pedido?</label>${ppaySeg()}<p class="hint">Al entregar, abre el pedido desde “En camino” en Inicio y captura tu viaje y cómo te pagó el cliente.</p>${gpsNote(r, 'recoger', id)}`;
   if (kind === 'viaje') body += `<details class="mix" id="pedSec" ${hasPed(r) || entregar ? 'open' : ''} style="margin-top:12px"><summary style="font-weight:600;font-size:13px;color:var(--lab);padding:10px 0;cursor:pointer">Pedido pagado por mí ${entregar ? '' : '(opcional)'}</summary>
     <label for="f_pedido">Monto del pedido</label><input class="inp" id="f_pedido" type="number" inputmode="decimal" step="any" placeholder="0" value="${esc(r.pedido ?? '')}">
     <label>Lo pagaste con</label>${ppaySeg()}
@@ -551,9 +598,9 @@ function openForm(kind, id) {
   <div class="mix" id="mixBox" hidden><div class="g3">${K3.map(k => `<div><label for="m_${k}">${PAGOS[k]}</label><input class="inp" id="m_${k}" type="number" inputmode="decimal" step="any" value="${m[k] ? esc(m[k]) : ''}"></div>`).join('')}</div><p class="hint" id="mixSum"></p></div>`;
   const saveTxt = entregar ? 'Entregar y guardar' : kind === 'recoger' && !id ? 'Guardar · voy en camino' : id ? 'Guardar cambios' : 'Guardar ' + F0.t.toLowerCase();
   openPanel(`<form id="frm" novalidate><div class="ph"><b>${title}</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
-  ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')} · adelantaste ${$m(r.pedido)} en ${esc((PAGOS[r.pedidoPago] || '').toLowerCase())}</span></div>` : ''}
+  ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')}${hasPed(r) ? ' · adelantaste ' + $m(r.pedido) + ' en ' + esc((PAGOS[r.pedidoPago] || '').toLowerCase()) : ' · sin pedido adelantado'}</span></div>` : ''}
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}</div>
-  ${body}${payBlock}
+  ${body}${payBlock}${kind === 'viaje' ? gpsNote(r, entregar ? 'entregar' : 'viaje', id) : ''}
   ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
   <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
@@ -586,14 +633,13 @@ function collect() {
   const F0 = FORMS[form.kind], c = F0.c, prev = form.id ? S[c][form.id] : {};
   const o = { ...prev, id: form.id || newId(F0.p) };
   const big = document.getElementById('f_' + F0.big[0]).value;
-  if (big === '') return [null, form.entregar ? 'Escribe el costo de tu viaje.' : 'Escribe el monto.'];
+  if (big === '' && form.kind !== 'recoger') return [null, form.entregar ? 'Escribe el costo de tu viaje.' : 'Escribe el monto.'];
   o[F0.big[0]] = num(big);
   for (const [k, , t, req] of F0.f) { const v = document.getElementById('f_' + k).value; if (req && v.trim() === '') return [null, 'Completa los campos marcados con *.']; o[k] = t === 'number' ? (v === '' ? null : num(v)) : v.trim(); }
   if (!o.fecha) return [null, 'Elige la fecha.'];
   if (form.kind === 'recoger') {
-    if (!(num(o.pedido) > 0)) return [null, 'Escribe cuánto pagaste por el pedido.'];
-    if (!form.ppay) return [null, 'Elige cómo pagaste el pedido.'];
-    o.pedidoPago = form.ppay; o.estado = st(prev) === 'cancelado' ? 'cancelado' : 'camino';
+    if (num(o.pedido) > 0 && !form.ppay) return [null, 'Elige cómo pagaste el pedido.'];
+    o.pedidoPago = num(o.pedido) > 0 ? form.ppay : null; if (!(num(o.pedido) > 0)) o.pedido = null; o.estado = st(prev) === 'cancelado' ? 'cancelado' : 'camino';
     if (!form.id) { o.tips = null; o.pago = null; o.montos = null; o.cobrado = null; }
     delete o.deleted; return [o, ''];
   }
@@ -613,6 +659,7 @@ function collect() {
 function submitForm(more) {
   const [o, err] = collect(); if (!o) { document.getElementById('ferr').textContent = err; return; }
   const kind = form.kind, wasEdit = !!form.id, ent = form.entregar; save(FORMS[kind].c, o);
+  if (kind === 'recoger' && !wasEdit) captureGps(o.id, 'gpsA'); else if (ent && o.gpsA) captureGps(o.id, 'gpsB');
   if (more) { toast('Viaje guardado'); openForm(kind); } else { closeSheet(); toast(ent ? 'Pedido entregado' : kind === 'recoger' && !wasEdit ? 'En camino · ábrelo en Inicio al entregar' : wasEdit ? 'Cambios guardados' : 'Guardado'); }
 }
 
@@ -625,7 +672,7 @@ async function buildXLS() {
   const X = await loadXLSX();
   const by = c => live(c).sort((a, b) => String(a.fecha).localeCompare(b.fecha) || num(a.createdAt || a.updatedAt) - num(b.createdAt || b.updatedAt));
   const wb = X.utils.book_new(), add = (n, rows) => X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), n);
-  add('Viajes', [['Fecha', 'Estado', 'Costo del viaje', 'Pago Call Center', 'Tips', 'Lugar asignado', 'Nota', 'Pedido adelantado', 'Pedido pagado con', 'Cobrado al cliente', 'Diferencia', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(by('viajes').map(v => [v.fecha, isG(v) ? 'Gasto' : { camino: 'En camino', cancelado: 'Cancelado' }[st(v)] || 'Entregado', num(v.costo), isG(v) || !done(v) ? '' : ccOf(v), num(v.tips) || '', v.lugar || '', v.nota || '', hasPed(v) ? num(v.pedido) : '', hasPed(v) ? PAGOS[v.pedidoPago] || '' : '', hasPed(v) && done(v) ? recTot('viajes', v) : '', hasPed(v) && done(v) ? +difOf(v).toFixed(2) : '', ...(done(v) || isG(v) ? pagoCols('viajes', v) : ['', '', '', ''])])));
+  add('Viajes', [['Fecha', 'Estado', 'Costo del viaje', 'Pago Call Center', 'Tips', 'Lugar asignado', 'Nota', 'Pedido adelantado', 'Pedido pagado con', 'Cobrado al cliente', 'Diferencia', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta', 'Km recorrido', 'Teléfono cliente']].concat(by('viajes').map(v => [v.fecha, isG(v) ? 'Gasto' : { camino: 'En camino', cancelado: 'Cancelado' }[st(v)] || 'Entregado', num(v.costo), isG(v) || !done(v) ? '' : ccOf(v), num(v.tips) || '', v.lugar || '', v.nota || '', hasPed(v) ? num(v.pedido) : '', hasPed(v) ? PAGOS[v.pedidoPago] || '' : '', hasPed(v) && done(v) ? recTot('viajes', v) : '', hasPed(v) && done(v) ? +difOf(v).toFixed(2) : '', ...(done(v) || isG(v) ? pagoCols('viajes', v) : ['', '', '', '']), num(v.km) || '', v.tel || ''])));
   const days = [...new Set(live('viajes').map(v => v.fecha).concat(live('gasolina').map(g => g.fecha)))].filter(Boolean).sort();
   add('Resumen diario', [['Fecha', 'Pedidos', 'Ingresos', 'Propinas', 'Gasolina', 'Gastos', 'Pérdidas en pedidos', 'Dinero real', 'Call Center', 'Ganancia neta', 'Fondo fijo', 'Efectivo en mano']].concat(days.map(d => { const x = sumDay(live('viajes').filter(v => v.fecha === d), gasOn(d)), c = caja(d); return [d, x.p, x.ing, x.tip, x.gl, x.gas, x.perd, x.real, x.cc, x.neta, c.fondo, c.mano]; })));
   add('Gasolina', [['Fecha', 'Kilometraje', 'Litros', 'Importe', 'Km recorridos', 'km/L', 'Costo por km', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(gasRows().map(r => [r.fecha, num(r.km), num(r.litros), num(r.importe), r.kmr ?? '', r.rend ? +r.rend.toFixed(2) : '', r.cpk ? +r.cpk.toFixed(3) : '', ...pagoCols('gasolina', r)])));
@@ -830,6 +877,7 @@ A.onAuthStateChanged(auth, u => {
   if (!u) { unsubs.forEach(x => x()); unsubs = []; COLS.forEach(c => { S[c] = {}; }); document.getElementById('app').innerHTML = vLogin(lastErr); return; }
   subscribe(); render();
   if (navigator.onLine) setTimeout(() => loadGIS().catch(() => {}), 1500);
+  setTimeout(routePending, 6000);
 });
 
 /* ---------- Funcionar sin internet ---------- */
