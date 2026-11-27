@@ -438,8 +438,8 @@ let renderLock = false;
 /* ---------- Formularios ---------- */
 const TIPOS = ['Servicio', 'Reparación', 'Compra de refacción', 'Otro'];
 const FORMS = {
-  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Monto del pedido que pagaste'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
-  viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Monto del pedido que pagaste'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   gasto: { c: 'viajes', p: 'v', t: 'Gasto', big: ['costo', 'Monto del gasto'], f: [['nota', 'Concepto', 'text'], ['fecha', 'Fecha', 'date']] },
   gasolina: { c: 'gasolina', p: 'g', t: 'Carga de gasolina', big: ['importe', 'Importe'], f: [['km', 'Kilometraje actual (km)', 'number', 1], ['litros', 'Litros cargados', 'number', 1], ['fecha', 'Fecha', 'date']] },
   mant: { c: 'mant', p: 'm', t: 'Servicio o refacción', big: ['precio', 'Precio unitario'], f: [['servicio', 'Servicio realizado / trabajo', 'text', 1], ['tipo', 'Tipo', 'tipo'], ['cantidad', 'Cantidad', 'number'], ['km', 'Kilometraje (km)', 'number'], ['fecha', 'Fecha', 'date'], ['producto', 'Producto o refacción', 'text'], ['proveedor', 'Taller / proveedor', 'text'], ['proxKm', 'Próximo servicio (km)', 'number'], ['proxFecha', 'Próxima fecha', 'date'], ['obs', 'Observaciones', 'text']] },
@@ -482,8 +482,19 @@ function sendWA() {
   if (ped) L.push('Pedido: ' + $r(ped));
   if (env) L.push('Envío: ' + $r(env));
   L.push('*Total a pagar: ' + $r(ped + env) + '*', '', '¡Gracias por tu preferencia!');
-  window.open('https://wa.me/?text=' + encodeURIComponent(L.join('\n')), '_blank');
+  const tel = (document.getElementById('f_tel') || {}).value || '', n = waNum(tel);
+  if (tel.trim() && !n) { document.getElementById('ferr').textContent = 'Revisa el teléfono: deben ser 10 dígitos.'; return; }
+  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
 }
+const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+function lugChips(q) {
+  const lug = (form && form.lug) || [], k = form && form.kind, f = fold(q);
+  let l;
+  if (!f) l = (k === 'recoger' ? [] : ['Vigs', 'Turepa', 'Personal']).concat(lug.filter(x => !EXC.includes(norm(x))).slice(0, k === 'recoger' ? 6 : 4));
+  else { const m = lug.filter(x => fold(x) !== f && (k !== 'recoger' || !EXC.includes(norm(x)))); l = m.filter(x => fold(x).startsWith(f)).concat(m.filter(x => !fold(x).startsWith(f) && fold(x).includes(f))).slice(0, 6); }
+  return l.map(x => `<button type="button" data-chip="${esc(x)}">${esc(x)}</button>`).join('') + (f && !l.length && !lug.some(x => fold(x) === f) ? '<span class="hint" style="margin:4px 2px">Lugar nuevo: se guardará para la próxima.</span>' : '');
+}
+const waNum = t => { let d = String(t || '').replace(/\D/g, ''); if (d.length === 10) d = '52' + d; return d.length >= 11 ? d : ''; };
 const PICO = { efectivo: 'cash', transferencia: 'xfer', tarjeta: 'card', mixto: 'mix' };
 const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" class="pi" data-ppay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
 function openForm(kind, id) {
@@ -492,11 +503,12 @@ function openForm(kind, id) {
   const cancelado = !!id && st(r) === 'cancelado';
   form = { kind, id, entregar, pay: r.pago || (id && !entregar ? '' : lastPay()), ppay: r.pedidoPago || lastPPay(), del: false, cancel: false, cobEdited: hasPed(r) && r.cobrado != null && Math.abs(num(r.cobrado) - expTot(r)) > .009 };
   const lug = (() => { const cnt = {}; live('viajes').forEach(v => { const l = String(v.lugar || '').trim(); if (l && !isG(v)) cnt[l] = (cnt[l] || 0) + 1; }); return Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]); })();
-  document.getElementById('lugares').innerHTML = lug.map(l => `<option value="${esc(l)}">`).join('');
+  form.lug = lug;
   const fld = ([k, l, t, req]) => {
     const v = esc(r[k] ?? '');
     if (t === 'tipo') return `<label for="f_${k}">${l}</label><select class="inp" id="f_${k}">${TIPOS.map(o => `<option${o === r[k] ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
-    if (t === 'lugar') return `<label for="f_${k}">${l} *</label><input class="inp" id="f_${k}" list="lugares" value="${v}" autocomplete="off" placeholder="Restaurante o excepción"><div class="chips" style="margin-top:8px">${(kind === 'recoger' ? [] : ['Vigs', 'Turepa', 'Personal']).concat(lug.filter(x => !EXC.includes(norm(x))).slice(0, kind === 'recoger' ? 6 : 4)).map(x => `<button type="button" data-chip="${esc(x)}">${esc(x)}</button>`).join('')}</div>`;
+    if (t === 'lugar') return `<label for="f_${k}">${l} *</label><input class="inp" id="f_${k}" value="${v}" autocomplete="off" autocapitalize="words" placeholder="Escribe y elige de la lista"><div class="chips" id="lugChips" style="margin-top:8px">${lugChips(r[k] || '')}</div>`;
+    if (t === 'tel') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" type="tel" inputmode="tel" autocomplete="off" value="${v}" placeholder="10 dígitos · para mandarle WhatsApp">`;
     return `<label for="f_${k}">${l}${req ? ' *' : ''}</label><input class="inp" id="f_${k}" type="${t === 'number' ? 'number' : t}" ${t === 'number' ? 'inputmode="decimal" step="any"' : ''} value="${v}">`;
   };
   const pairs = { viaje: [['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
@@ -719,7 +731,7 @@ document.addEventListener('click', async e => {
   if (d.pay) { form.pay = d.pay; try { localStorage.setItem('cp_pay', d.pay); } catch (x) {} updForm(); return; }
   if (d.venc) { if (S.venc[d.venc]) openVenc(d.venc); return; }
   if (d.vchip) { document.getElementById('v_nombre').value = d.vchip; return; }
-  if (d.chip) { document.getElementById('f_lugar').value = d.chip; updForm(); return; }
+  if (d.chip) { document.getElementById('f_lugar').value = d.chip; document.getElementById('lugChips').innerHTML = lugChips(d.chip); updForm(); return; }
   if (d.fp) { fPay = d.fp; render(); return; }
   if (d.fall) { fAll = d.fall === '1'; render(); return; }
   if (d.per) { period = d.per; render(); return; }
@@ -750,7 +762,7 @@ document.addEventListener('click', async e => {
 function closeIfOpen() { if (document.getElementById('sheet').classList.contains('open')) { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; } }
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
 document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } });
-document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
+document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
 document.addEventListener('change', e => {
   if (e.target.id === 'dayIn' && e.target.value) { dayView = e.target.value; render(); }
   if (e.target.id === 'fondoIn') { const dd = e.target.dataset.d, v = e.target.value === '' ? 0 : num(e.target.value); if (v === fondoOf(dd)) return; save('fondos', { ...(S.fondos[dd] || {}), id: dd, fecha: dd, monto: v }); toast('Fondo fijo guardado'); }
