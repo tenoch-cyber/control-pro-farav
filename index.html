@@ -141,7 +141,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -164,7 +164,8 @@ catch (e) { fs = F.getFirestore(app); }
 
 /* ---------- Estado ---------- */
 if (/netlify\.app$/.test(location.hostname)) document.body.classList.add('nb');
-const COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc'];
+const COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc', 'meta'];
+const DATA_COLS = ['viajes', 'gasolina', 'mant', 'fondos', 'pagoscc'];
 const EXC = ['vigs', 'turepa', 'personal', 'gasto'];
 const K3 = ['efectivo', 'transferencia', 'tarjeta'];
 const PAGOS = { efectivo: 'Efectivo', transferencia: 'Transferencia', tarjeta: 'Tarjeta', mixto: 'Mixto' };
@@ -304,6 +305,7 @@ function vInicio() {
   <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$m(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
   <div class="sub"><div><small>Hoy</small><b>${$m(h.real)}</b></div><div><small>Ganancia neta</small><b>${$m(w.neta)}</b></div></div></div>
   <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
+  ${bkBanner()}
   <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
   ${alerts()}
   ${caminoCard()}
@@ -381,13 +383,13 @@ function vMoto() {
 
 function vAcerca() {
   const pend = COLS.some(c => meta[c].pending);
-  const lastBk = (() => { try { return localStorage.getItem('cp_lastxls'); } catch (e) { return null; } })();
+  const bm = bkMeta(), fd = t => t ? esc(new Date(num(t)).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })) : '—';
   return `<div class="hdr"><div class="row" style="justify-content:flex-start;gap:4px"><button class="ibtn" type="button" data-go="inicio" aria-label="Volver" style="border:0;background:none">${ic('back')}</button><b style="font-size:17px">Acerca de</b></div></div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 18px"><div class="logo">${ic('bike')}</div><b style="font-size:24px">Control Pro</b><span class="lbl" style="font-size:14px">Versión ${VERSION}</span></div>
-  <div class="card"><div class="kv"><span>Desarrollada por</span><b>Grupo Farav</b></div><div class="kv"><span>Propiedad de</span><b>Grupo Farav</b></div><div class="kv"><span>Cuenta</span><b style="max-width:60%;overflow:hidden;text-overflow:ellipsis">${esc(user && user.email)}</b></div><div class="kv"><span>Sincronización</span><b class="${!navigator.onLine || pend ? '' : 'gin'}">${!navigator.onLine ? 'Sin conexión' : pend ? 'Subiendo…' : 'Al día'}</b></div><div class="kv"><span>Último Excel</span><b>${lastBk ? esc(fdate(lastBk, { day: 'numeric', month: 'short', year: 'numeric' })) : '—'}</b></div><div class="kv"><span>Registros</span><b>${COLS.reduce((a, c) => a + live(c).length, 0)}</b></div></div>
+  <div class="card"><div class="kv"><span>Desarrollada por</span><b>Grupo Farav</b></div><div class="kv"><span>Propiedad de</span><b>Grupo Farav</b></div><div class="kv"><span>Cuenta</span><b style="max-width:60%;overflow:hidden;text-overflow:ellipsis">${esc(user && user.email)}</b></div><div class="kv"><span>Sincronización</span><b class="${!navigator.onLine || pend ? '' : 'gin'}">${!navigator.onLine ? 'Sin conexión' : pend ? 'Subiendo…' : 'Al día'}</b></div><div class="kv"><span>Último respaldo en Drive</span><b>${fd(bm.driveAt)}</b></div><div class="kv"><span>Última descarga</span><b>${fd(bm.localAt)}</b></div><div class="kv"><span>Registros</span><b>${DATA_COLS.reduce((a, c) => a + live(c).length, 0)}</b></div></div>
   <div class="card mt"><div class="sec"><b>Respaldo y migración</b></div>
-  <div style="display:flex;flex-direction:column;gap:8px"><button class="btn" type="button" data-act="xls">${ic('dl')} Descargar Excel</button><button class="btn" type="button" data-act="json">${ic('dl')} Descargar respaldo (.json)</button><button class="btn" type="button" data-act="import">${ic('up')} Importar respaldo</button></div>
-  <p class="hint">Importar acepta el respaldo de la app anterior (archivo .json o el texto de “Copiar respaldo”). Si un registro ya existe, se queda la versión más reciente.</p></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><button class="btn pri" type="button" data-act="drivebk">${ic('up')} Respaldar en Google Drive</button>${bm.driveFolderId ? `<a class="btn" href="https://drive.google.com/drive/folders/${encodeURIComponent(bm.driveFolderId)}" target="_blank" rel="noopener">Abrir carpeta en Drive</a>` : ''}<button class="btn" type="button" data-act="xls">${ic('dl')} Descargar Excel</button><button class="btn" type="button" data-act="json">${ic('dl')} Descargar respaldo (.json)</button><button class="btn" type="button" data-act="import">${ic('up')} Importar respaldo</button></div>
+  <p class="hint">El respaldo en Drive guarda un .json (para restaurar) y un Excel en la carpeta “Respaldos Control Pro”. La app solo puede ver los archivos que ella crea. Importar acepta el respaldo de la app anterior (archivo .json o el texto de “Copiar respaldo”). Si un registro ya existe, se queda la versión más reciente.</p></div>
   ${installEvt ? `<button class="btn wide mt pri" type="button" data-act="install">Instalar Control Pro</button>` : `<p class="hint mt">Para instalarla: en Chrome toca ⋮ → “Instalar app” o “Agregar a pantalla principal”. En iPhone: Compartir → “Agregar a inicio”.</p>`}
   <button class="btn wide mt dng" type="button" data-act="logout" id="logoutBtn">Cerrar sesión</button>
   <p style="margin:18px 4px 0;font-size:13px;color:var(--mute);line-height:1.55">Control Pro es una aplicación desarrollada por Grupo Farav para llevar el control de viajes, gastos, gasolina, mantenimiento y finanzas diarias.</p>
@@ -532,8 +534,8 @@ let xlsxP = null;
 const loadXLSX = () => xlsxP || (xlsxP = new Promise((ok, no) => { if (window.XLSX) return ok(window.XLSX); const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = () => ok(window.XLSX); s.onerror = () => { xlsxP = null; no(); }; document.head.appendChild(s); }));
 function download(name, blob) { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
 const pagoCols = (c, r) => { const s = split(c, r); return [r.pago ? PAGOS[r.pago] : '', s ? s.efectivo : '', s ? s.transferencia : '', s ? s.tarjeta : '']; };
-async function exportXLS() {
-  let X; try { X = await loadXLSX(); } catch (e) { toast('Se necesita internet la primera vez para exportar a Excel'); return; }
+async function buildXLS() {
+  const X = await loadXLSX();
   const by = c => live(c).sort((a, b) => String(a.fecha).localeCompare(b.fecha) || num(a.createdAt || a.updatedAt) - num(b.createdAt || b.updatedAt));
   const wb = X.utils.book_new(), add = (n, rows) => X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), n);
   add('Viajes', [['Fecha', 'Estado', 'Costo del viaje', 'Pago Call Center', 'Tips', 'Lugar asignado', 'Nota', 'Pedido adelantado', 'Pedido pagado con', 'Cobrado al cliente', 'Diferencia', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(by('viajes').map(v => [v.fecha, isG(v) ? 'Gasto' : { camino: 'En camino', cancelado: 'Cancelado' }[st(v)] || 'Entregado', num(v.costo), isG(v) || !done(v) ? '' : ccOf(v), num(v.tips) || '', v.lugar || '', v.nota || '', hasPed(v) ? num(v.pedido) : '', hasPed(v) ? PAGOS[v.pedidoPago] || '' : '', hasPed(v) && done(v) ? recTot('viajes', v) : '', hasPed(v) && done(v) ? +difOf(v).toFixed(2) : '', ...(done(v) || isG(v) ? pagoCols('viajes', v) : ['', '', '', ''])])));
@@ -543,12 +545,79 @@ async function exportXLS() {
   add('Taller', [['Fecha', 'Kilometraje', 'Tipo', 'Servicio', 'Producto', 'Cantidad', 'Precio unitario', 'Total', 'Proveedor', 'Próximo (km)', 'Próxima fecha', 'Observaciones', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(by('mant').map(r => [r.fecha, r.km ?? '', r.tipo || '', r.servicio || '', r.producto || '', num(r.cantidad || 1), num(r.precio), mantTot(r), r.proveedor || '', r.proxKm ?? '', r.proxFecha || '', r.obs || '', ...pagoCols('mant', r)])));
   add('Abonos Call Center', [['Fecha', 'Monto', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta', 'Nota']].concat(by('pagoscc').map(r => [r.fecha, num(r.monto), ...pagoCols('pagoscc', r), r.nota || ''])));
   add('Fondos fijos', [['Fecha', 'Fondo fijo']].concat(by('fondos').map(f => [f.fecha, num(f.monto)])));
-  const data = X.write(wb, { bookType: 'xlsx', type: 'array' });
-  download('ControlPro_' + today() + '.xlsx', new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-  try { localStorage.setItem('cp_lastxls', today()); } catch (e) {}
-  toast('Excel descargado'); render();
+  return new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })], { type: XLSX_MIME });
 }
-function exportJSON() { const o = { app: 'Control Pro', formato: 1, exportado: today() }; COLS.forEach(c => o[c] = Object.values(S[c])); download('ControlPro_respaldo_' + today() + '.json', new Blob([JSON.stringify(o)], { type: 'application/json' })); toast('Respaldo descargado'); }
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const bkMeta = () => S.meta.backup || {};
+const lastBkAt = () => Math.max(num(bkMeta().driveAt), num(bkMeta().localAt));
+function markBk(k, extra = {}) { save('meta', { ...bkMeta(), ...extra, id: 'backup', [k]: Date.now() }); }
+async function exportXLS() {
+  let b; try { b = await buildXLS(); } catch (e) { toast('Se necesita internet la primera vez para exportar a Excel'); return; }
+  download('ControlPro_' + today() + '.xlsx', b); markBk('localAt'); toast('Excel descargado');
+}
+const jsonBlob = () => { const o = { app: 'Control Pro', formato: 1, exportado: today() }; DATA_COLS.forEach(c => o[c] = Object.values(S[c])); return new Blob([JSON.stringify(o)], { type: 'application/json' }); };
+function exportJSON() { download('ControlPro_respaldo_' + today() + '.json', jsonBlob()); markBk('localAt'); toast('Respaldo descargado'); }
+
+/* ---------- Respaldo en Google Drive (solo archivos creados por la app: permiso drive.file) ---------- */
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+let driveBusy = false;
+function cachedToken() { try { const t = JSON.parse(sessionStorage.getItem('cp_dtok') || 'null'); return t && t.exp > Date.now() ? t.tok : null; } catch (e) { return null; } }
+function keepToken(tok) { try { sessionStorage.setItem('cp_dtok', JSON.stringify({ tok, exp: Date.now() + 50 * 6e4 })); } catch (e) {} }
+const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || matchMedia('(display-mode: standalone)').matches;
+async function driveBackup() {
+  if (driveBusy) return;
+  if (!navigator.onLine) { toast('Necesitas internet para respaldar en Drive'); return; }
+  const tok = cachedToken();
+  if (tok) return driveUpload(tok);
+  const prov = new A.GoogleAuthProvider(); prov.addScope(DRIVE_SCOPE); prov.setCustomParameters({ login_hint: user.email || '' });
+  try {
+    if (isMobile() && /netlify\.app$/.test(location.hostname)) { sessionStorage.setItem('cp_drive_pending', '1'); await A.reauthenticateWithRedirect(user, prov); return; }
+    const res = await A.reauthenticateWithPopup(user, prov), cred = A.GoogleAuthProvider.credentialFromResult(res);
+    if (!cred || !cred.accessToken) throw { code: 'no-token' };
+    keepToken(cred.accessToken); await driveUpload(cred.accessToken);
+  } catch (e) { driveErr(e); }
+}
+function driveErr(e) {
+  driveBusy = false; const c = (e && (e.code || e.status)) || '';
+  const m = c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? 'Se canceló el permiso de Google Drive.'
+    : c === 'auth/user-mismatch' ? 'Elige la misma cuenta de Google con la que entras a la app.'
+    : c === 403 && /accessNotConfigured|has not been used|disabled/i.test(e.msg || '') ? 'Falta activar la Google Drive API en Google Cloud.'
+    : c === 401 ? 'El permiso de Drive venció. Toca Respaldar otra vez.'
+    : 'No se pudo respaldar en Drive (' + (c || 'error') + ').';
+  if (c === 401) { try { sessionStorage.removeItem('cp_dtok'); } catch (x) {} }
+  toast(m); render();
+}
+async function gfetch(tok, url, opt = {}) {
+  const r = await fetch(url, { ...opt, headers: { Authorization: 'Bearer ' + tok, ...(opt.headers || {}) } });
+  if (!r.ok) { let msg = ''; try { msg = JSON.stringify(await r.json()); } catch (e) {} throw { status: r.status, code: r.status, msg }; }
+  return r.json();
+}
+async function driveFolder(tok) {
+  const id = bkMeta().driveFolderId;
+  if (id) { try { const f = await gfetch(tok, 'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(id) + '?fields=id,trashed'); if (!f.trashed) return id; } catch (e) { if (e.status !== 404) throw e; } }
+  const f = await gfetch(tok, 'https://www.googleapis.com/drive/v3/files?fields=id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Respaldos Control Pro', mimeType: 'application/vnd.google-apps.folder' }) });
+  return f.id;
+}
+async function driveFile(tok, folder, name, blob) {
+  const meta = new Blob([JSON.stringify({ name, parents: [folder] })], { type: 'application/json' });
+  const fd = new FormData(); fd.append('metadata', meta); fd.append('file', blob);
+  return gfetch(tok, 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', { method: 'POST', body: fd });
+}
+async function driveUpload(tok) {
+  driveBusy = true; toast('Subiendo respaldo a Google Drive…');
+  try {
+    const folder = await driveFolder(tok), stamp = today();
+    await driveFile(tok, folder, 'ControlPro_respaldo_' + stamp + '.json', jsonBlob());
+    let xlsOk = true; try { await driveFile(tok, folder, 'ControlPro_' + stamp + '.xlsx', await buildXLS()); } catch (e) { if (e && e.status) throw e; xlsOk = false; }
+    markBk('driveAt', { driveFolderId: folder }); driveBusy = false;
+    toast(xlsOk ? 'Respaldo guardado en Google Drive ✓' : 'Respaldo (.json) guardado en Drive ✓');
+  } catch (e) { driveErr(e); }
+}
+function bkBanner() {
+  const at = lastBkAt(), days = at ? Math.floor((Date.now() - at) / 864e5) : null;
+  if (days !== null && days < 7) return '';
+  return `<div class="card mt ccrow" style="border-color:#1f3a5f"><div><b>${days === null ? 'Aún no tienes un respaldo' : 'Llevas ' + days + ' días sin respaldo'}</b><div class="lbl">Guarda una copia en tu Google Drive</div></div><button class="btn pri" type="button" data-act="drivebk" style="min-height:40px">Respaldar</button></div>`;
+}
 function openImport() {
   openPanel(`<div class="ph"><b>Importar respaldo</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
   <p class="hint" style="font-size:13px">Elige el archivo .json o pega el texto que copiaste con “📋 Copiar respaldo” en la app anterior.</p>
@@ -597,6 +666,7 @@ document.addEventListener('click', async e => {
     case 'cancelped': { if (!form.cancel) { form.cancel = true; b.textContent = 'Toca otra vez: el pedido se canceló'; return; } const prev = { ...S.viajes[form.id] }; save('viajes', { ...prev, estado: 'cancelado' }); closeSheet(); toast('Pedido cancelado · se registra la pérdida', () => save('viajes', { ...prev, estado: 'camino' })); break; }
     case 'xls': exportXLS(); break;
     case 'json': exportJSON(); break;
+    case 'drivebk': driveBackup(); break;
     case 'import': openImport(); break;
     case 'pickfile': document.getElementById('fileIn').click(); break;
     case 'doimport': doImport(document.getElementById('impTxt').value); break;
@@ -637,7 +707,12 @@ function loginError(e) {
   }
 }
 let lastErr = '';
-A.getRedirectResult(auth).catch(e => { if (e && e.code) loginError(e); });
+A.getRedirectResult(auth).then(res => {
+  if (!res || sessionStorage.getItem('cp_drive_pending') !== '1') return;
+  sessionStorage.removeItem('cp_drive_pending');
+  const cred = A.GoogleAuthProvider.credentialFromResult(res);
+  if (cred && cred.accessToken) { keepToken(cred.accessToken); const go = () => { if (user && COLS.every(c => meta[c].got)) driveUpload(cred.accessToken); else setTimeout(go, 400); }; go(); }
+}).catch(e => { if (sessionStorage.getItem('cp_drive_pending') === '1') { sessionStorage.removeItem('cp_drive_pending'); driveErr(e); } else if (e && e.code) loginError(e); });
 A.onAuthStateChanged(auth, u => {
   user = u;
   if (!u) { unsubs.forEach(x => x()); unsubs = []; COLS.forEach(c => { S[c] = {}; }); document.getElementById('app').innerHTML = vLogin(lastErr); return; }
