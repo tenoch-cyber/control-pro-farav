@@ -406,6 +406,7 @@ function vAcerca() {
   return `<div class="hdr"><div class="row" style="justify-content:flex-start;gap:4px"><button class="ibtn" type="button" data-go="inicio" aria-label="Volver" style="border:0;background:none">${ic('back')}</button><b style="font-size:17px">Acerca de</b></div></div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 18px"><img class="brand" src="logo-farav.jpg" alt="Grupo Farav" style="width:150px"><b style="font-size:24px">Control Pro</b><span class="lbl" style="font-size:14px">Versión ${VERSION}</span></div>
   <div class="card"><div class="kv"><span>Desarrollada por</span><b>Grupo Farav</b></div><div class="kv"><span>Propiedad de</span><b>Grupo Farav</b></div><div class="kv"><span>Cuenta</span><b style="max-width:60%;overflow:hidden;text-overflow:ellipsis">${esc(user && user.email)}</b></div><div class="kv"><span>Sincronización</span><b class="${!navigator.onLine || pend ? '' : 'gin'}">${!navigator.onLine ? 'Sin conexión' : pend ? 'Subiendo…' : 'Al día'}</b></div><div class="kv"><span>Último respaldo en Drive</span><b>${fd(bm.driveAt)}</b></div><div class="kv"><span>Última descarga</span><b>${fd(bm.localAt)}</b></div><div class="kv"><span>Registros</span><b>${DATA_COLS.reduce((a, c) => a + live(c).length, 0)}</b></div></div>
+  <div class="card mt"><div class="sec"><b>Datos para cobrar</b><button type="button" data-act="cobro">${cobro().clabe ? 'Editar' : 'Agregar'}</button></div>${cobro().clabe ? `<div class="kv"><span>Banco</span><b>${esc(cobro().banco || '—')}</b></div><div class="kv"><span>CLABE</span><b>${esc(cobro().clabe)}</b></div>${cobro().titular ? `<div class="kv"><span>Titular</span><b>${esc(cobro().titular)}</b></div>` : ''}` : '<p class="hint">Agrega tu CLABE y se incluirá en el mensaje de WhatsApp al cliente.</p>'}</div>
   <div class="card mt"><div class="sec"><b>Respaldo y migración</b></div>
   <div style="display:flex;flex-direction:column;gap:8px"><button class="btn pri" type="button" data-act="drivebk">${ic('up')} Respaldar en Google Drive</button>${bm.driveFolderId ? `<a class="btn" href="https://drive.google.com/drive/folders/${encodeURIComponent(bm.driveFolderId)}" target="_blank" rel="noopener">Abrir carpeta en Drive</a>` : ''}<button class="btn" type="button" data-act="xls">${ic('dl')} Descargar Excel</button><button class="btn" type="button" data-act="json">${ic('dl')} Descargar respaldo (.json)</button><button class="btn" type="button" data-act="import">${ic('up')} Importar respaldo</button></div>
   <p class="hint">El respaldo en Drive guarda un .json (para restaurar) y un Excel en la carpeta “Respaldos Control Pro”. La app solo puede ver los archivos que ella crea. Importar acepta el respaldo de la app anterior (archivo .json o el texto de “Copiar respaldo”). Si un registro ya existe, se queda la versión más reciente.</p></div>
@@ -475,6 +476,23 @@ function saveVenc(renew) {
   save('venc', { ...prev, nombre, fecha, nota }); closeSheet();
   toast(renew ? 'Renovado: ahora vence el ' + fdate(fecha, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Vencimiento guardado');
 }
+const cobro = () => S.meta.cobro || {};
+const clabeOk = c => { if (!/^\d{18}$/.test(c)) return false; const w = [3, 7, 1]; let s = 0; for (let i = 0; i < 17; i++) s += (+c[i] * w[i % 3]) % 10; return (10 - s % 10) % 10 === +c[17]; };
+function openCobro() {
+  const c = cobro(); form = { kind: 'cobro' };
+  openPanel(`<form id="cfrm" novalidate><div class="ph"><b>Datos para cobrar</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
+  <label for="c_banco">Banco</label><input class="inp" id="c_banco" value="${esc(c.banco || '')}" placeholder="Ej. BBVA">
+  <label for="c_clabe">CLABE (18 dígitos)</label><input class="inp" id="c_clabe" inputmode="numeric" value="${esc(c.clabe || '')}" placeholder="012180…">
+  <label for="c_tit">Nombre del titular (opcional)</label><input class="inp" id="c_tit" value="${esc(c.titular || '')}" placeholder="Como aparece en tu cuenta">
+  <p class="hint">Se guarda solo en tu cuenta y se agrega al mensaje de WhatsApp.</p><p class="hint" id="cerr" style="color:var(--bad)"></p>
+  <button class="btn wide pri" type="button" data-act="csave" style="margin-top:14px">Guardar</button>${c.clabe ? '<button class="btn wide dng" type="button" data-act="cdel" style="margin-top:8px">Quitar datos</button>' : ''}</form>`);
+}
+function saveCobro(del) {
+  if (del) { save('meta', { id: 'cobro', banco: '', clabe: '', titular: '' }); closeSheet(); toast('Datos quitados'); return; }
+  const clabe = document.getElementById('c_clabe').value.replace(/\D/g, ''), banco = document.getElementById('c_banco').value.trim(), titular = document.getElementById('c_tit').value.trim();
+  if (!clabeOk(clabe)) { document.getElementById('cerr').textContent = 'La CLABE no es válida: revisa que tenga 18 dígitos y estén bien.'; return; }
+  save('meta', { ...cobro(), id: 'cobro', banco, clabe, titular }); closeSheet(); toast('Datos para cobrar guardados');
+}
 function sendWA() {
   const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = pedNow(), env = gv('f_costo');
   if (!ped && !env) { document.getElementById('ferr').textContent = 'Escribe el costo del viaje o el monto del pedido.'; return; }
@@ -482,7 +500,9 @@ function sendWA() {
   const L = ['Hola, ' + sal + ' 👋', 'Soy el repartidor asignado para entregar su pedido' + (lugar && !EXC.includes(norm(lugar)) ? ' de *' + lugar + '*.' : '.'), ''];
   if (ped) L.push('Pedido: ' + $r(ped));
   if (env) L.push('Envío: ' + $r(env));
-  L.push('*Total a pagar: ' + $r(ped + env) + '*', '', 'Puede pagar en efectivo, transferencia bancaria o tarjeta (con tarjeta se cobra comisión).', '', '¡Gracias por su preferencia!');
+  L.push('*Total a pagar: ' + $r(ped + env) + '*', '', 'Puede pagar en efectivo, transferencia bancaria o tarjeta (con tarjeta se cobra comisión).');
+  const cb = cobro(); if (cb.clabe) L.push('', '*Datos para transferencia:*', (cb.banco ? cb.banco + ' · ' : '') + 'CLABE ' + cb.clabe + (cb.titular ? '\nTitular: ' + cb.titular : ''));
+  L.push('', '¡Gracias por su preferencia!');
   const tel = (document.getElementById('f_tel') || {}).value || '', n = waNum(tel);
   if (tel.trim() && !n) { document.getElementById('ferr').textContent = 'Revisa el teléfono: deben ser 10 dígitos.'; return; }
   window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
@@ -749,6 +769,9 @@ document.addEventListener('click', async e => {
     case 'vrenew': saveVenc(true); break;
     case 'vdel': { if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para eliminar'; return; } const prev = { ...S.venc[form.id] }; save('venc', { ...prev, deleted: true }); closeSheet(); toast('Vencimiento eliminado', () => save('venc', { ...prev, deleted: false })); break; }
     case 'wa': sendWA(); break;
+    case 'cobro': openCobro(); break;
+    case 'csave': saveCobro(false); break;
+    case 'cdel': saveCobro(true); break;
     case 'xls': exportXLS(); break;
     case 'json': exportJSON(); break;
     case 'drivebk': driveBackup(); break;
@@ -762,7 +785,7 @@ document.addEventListener('click', async e => {
 });
 function closeIfOpen() { if (document.getElementById('sheet').classList.contains('open')) { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; } }
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
-document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } });
+document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } else if (e.target.id === 'cfrm') { e.preventDefault(); saveCobro(false); } });
 document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
 document.addEventListener('change', e => {
   if (e.target.id === 'dayIn' && e.target.value) { dayView = e.target.value; render(); }
