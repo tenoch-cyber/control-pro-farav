@@ -141,7 +141,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.0.4';
+const VERSION = '1.0.5';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -571,7 +571,7 @@ async function driveBackup() {
   if (tok) return driveUpload(tok);
   const prov = new A.GoogleAuthProvider(); prov.addScope(DRIVE_SCOPE); prov.setCustomParameters({ login_hint: user.email || '' });
   try {
-    if (isMobile() && /netlify\.app$/.test(location.hostname)) { sessionStorage.setItem('cp_drive_pending', '1'); await A.reauthenticateWithRedirect(user, prov); return; }
+    // Ventana emergente en el mismo dominio (funciona en la app instalada; el modo de redirección pierde el estado en Android)
     const res = await A.reauthenticateWithPopup(user, prov), cred = A.GoogleAuthProvider.credentialFromResult(res);
     if (!cred || !cred.accessToken) throw { code: 'no-token' };
     keepToken(cred.accessToken); await driveUpload(cred.accessToken);
@@ -579,7 +579,8 @@ async function driveBackup() {
 }
 function driveErr(e) {
   driveBusy = false; const c = (e && (e.code || e.status)) || '';
-  const m = c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? 'Se canceló el permiso de Google Drive.'
+  const m = c === 'auth/popup-blocked' ? 'El teléfono bloqueó la ventana de Google. Permite ventanas emergentes para esta app e intenta de nuevo.'
+    : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? 'Se cerró la ventana de Google antes de terminar. Intenta de nuevo.'
     : c === 'auth/user-mismatch' ? 'Elige la misma cuenta de Google con la que entras a la app.'
     : c === 403 && /accessNotConfigured|has not been used|disabled/i.test(e.msg || '') ? 'Falta activar la Google Drive API en Google Cloud.'
     : c === 401 ? 'El permiso de Drive venció. Toca Respaldar otra vez.'
