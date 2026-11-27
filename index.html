@@ -147,7 +147,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.1.3';
+const VERSION = '1.1.4';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -314,7 +314,7 @@ function syncPill() {
 addEventListener('online', () => render()); addEventListener('offline', () => render());
 
 /* ---------- Vistas ---------- */
-const foot = `<div class="foot">Control Pro · © 2026 Grupo Farav</div>`;
+const foot = '';
 const eyeBtn = () => `<button class="ibtn" type="button" data-act="hide" aria-label="${hideAmt ? 'Mostrar montos' : 'Ocultar montos'}">${ic(hideAmt ? 'eyeoff' : 'eye')}</button>`;
 const gearBtn = `<button class="ibtn" type="button" data-go="acerca" aria-label="Ajustes y acerca de">${ic('gear')}</button>`;
 const titleBar = t => `<div class="hdr"><div class="t"><b>${t}</b></div><div class="hdr-r">${syncPill()}${gearBtn}</div></div>`;
