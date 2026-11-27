@@ -144,7 +144,7 @@ body.nb .nbfoot{display:block}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -183,8 +183,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 let hideAmt = false; try { hideAmt = localStorage.getItem('cp_hide') === '1'; } catch (e) {}
 const sheetOpen = () => { const s = document.getElementById('sheet'); return !!(s && s.classList.contains('open')); };
+const $h = n => hideAmt ? '$ ••••' : $m(n);
 const $r = n => (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const $m = n => hideAmt && !sheetOpen() ? '$ ••••' : (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const $m = n => (num(n) < 0 ? '−' : '') + '$' + Math.abs(num(n)).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const f1 = n => num(n).toLocaleString('es-MX', { maximumFractionDigits: 1 });
 const norm = s => String(s || '').trim().toLowerCase();
 const isG = v => norm(v.lugar) === 'gasto';
@@ -233,7 +234,7 @@ const expTot = v => num(v.costo) + num(v.tips) + num(v.pedido);
 const recTot = (c, r) => c === 'pagoscc' ? num(r.monto) : c === 'gasolina' ? num(r.importe) : c === 'mant' ? mantTot(r) : isG(r) ? num(r.costo) : hasPed(r) ? (r.cobrado != null && r.cobrado !== '' ? num(r.cobrado) : expTot(r)) : num(r.costo) + num(r.tips);
 const difOf = v => hasPed(v) && done(v) && !isG(v) ? recTot('viajes', v) - expTot(v) : 0;
 const enCamino = () => live('viajes').filter(v => st(v) === 'camino').sort((a, b) => num(a.createdAt || a.updatedAt) - num(b.createdAt || b.updatedAt));
-const porCobrar = () => enCamino().reduce((a, v) => a + num(v.pedido), 0);
+const porCobrar = () => enCamino().reduce((a, v) => a + num(v.pedido) + num(v.costo), 0);
 function split(c, r) { const t = recTot(c, r); if (r.pago === 'mixto' && r.montos) return { efectivo: num(r.montos.efectivo), transferencia: num(r.montos.transferencia), tarjeta: num(r.montos.tarjeta) }; if (K3.includes(r.pago)) { const o = { efectivo: 0, transferencia: 0, tarjeta: 0 }; o[r.pago] = t; return o; } return null; }
 function sumDay(rows, gl = 0) { let p = 0, ing = 0, cc = 0, tip = 0, gas = 0, perd = 0, ade = 0; for (const v of rows) { const s = st(v); if (hasPed(v) && !isG(v)) ade += num(v.pedido); if (s === 'camino') continue; if (s === 'cancelado') { perd += num(v.pedido); continue; } if (isG(v)) { gas += num(v.costo); continue; } p++; ing += num(v.costo); cc += ccOf(v); tip += num(v.tips); const d = difOf(v); if (d < 0) perd += -d; else tip += d; } const real = ing + tip - gas - gl - perd; return { p, ing, cc, tip, gas, gl, perd, ade, real, neta: real - cc }; }
 const gasOn = f => live('gasolina').filter(g => g.fecha === f).reduce((a, g) => a + num(g.importe), 0);
@@ -313,21 +314,21 @@ addEventListener('online', () => render()); addEventListener('offline', () => re
 const foot = `<div class="foot">Control Pro · © 2026 Grupo Farav</div>`;
 const eyeBtn = () => `<button class="ibtn" type="button" data-act="hide" aria-label="${hideAmt ? 'Mostrar montos' : 'Ocultar montos'}">${ic(hideAmt ? 'eyeoff' : 'eye')}</button>`;
 const gearBtn = `<button class="ibtn" type="button" data-go="acerca" aria-label="Ajustes y acerca de">${ic('gear')}</button>`;
-const titleBar = t => `<div class="hdr"><div class="t"><b>${t}</b></div><div class="hdr-r">${syncPill()}${eyeBtn()}${gearBtn}</div></div>`;
+const titleBar = t => `<div class="hdr"><div class="t"><b>${t}</b></div><div class="hdr-r">${syncPill()}${gearBtn}</div></div>`;
 
 function vInicio() {
   const t = today(), w = sumRange(weekStart(), t), h = sumDay(live('viajes').filter(v => v.fecha === t), gasOn(t)), c = caja(t), pend = ccPend();
   const recent = movs().slice(0, 6);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   return `<div class="hdr"><div class="t"><small>${esc(fdate(t, { weekday: 'long', day: 'numeric', month: 'long' }))}</small><b>Control Pro</b></div><div class="hdr-r">${syncPill()}${eyeBtn()}${gearBtn}</div></div>
-  <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$m(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
-  <div class="sub"><div><small>Hoy</small><b>${$m(h.real)}</b></div><div><small>Ganancia neta</small><b>${$m(w.neta)}</b></div></div></div>
+  <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$h(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
+  <div class="sub"><div><small>Hoy</small><b>${$h(h.real)}</b></div><div><small>Ganancia neta</small><b>${$h(w.neta)}</b></div></div></div>
   <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
   ${bkBanner()}
   <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
   ${alerts()}
   ${caminoCard()}
-  <button class="card mt ccrow" type="button" data-go="movs" style="width:100%;text-align:left;cursor:pointer;color:var(--ink)"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--okbg);color:var(--ok)">${ic('cash')}</span><div><div class="lbl">Efectivo en mano hoy</div><b style="font-size:17px">${$m(c.mano)}</b></div></div><span class="lbl">Corte de caja ›</span></button>
+  <button class="card mt ccrow" type="button" data-go="movs" style="width:100%;text-align:left;cursor:pointer;color:var(--ink)"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--okbg);color:var(--ok)">${ic('cash')}</span><div><div class="lbl">Efectivo en mano hoy</div><b style="font-size:17px">${$h(c.mano)}</b></div></div><span class="lbl">Corte de caja ›</span></button>
   ${!standalone && installEvt ? `<button class="card mt ccrow" type="button" data-act="install" style="width:100%;text-align:left;color:var(--ink);cursor:pointer"><div><b>Instalar Control Pro</b><div class="lbl">Ábrela como app, también sin internet</div></div><span class="lbl">Instalar ›</span></button>` : ''}
   <div class="card mt"><div class="sec"><b>Movimientos recientes</b><button type="button" data-go="movs">Ver todo</button></div>${recent.length ? recent.map(mvHtml).join('') : '<div class="empty">Aún no hay movimientos. Toca + para registrar tu primer viaje.</div>'}</div>${foot}`;
 }
@@ -439,7 +440,7 @@ let renderLock = false;
 /* ---------- Formularios ---------- */
 const TIPOS = ['Servicio', 'Reparación', 'Compra de refacción', 'Otro'];
 const FORMS = {
-  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Monto del pedido que pagaste'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Monto del pedido que pagaste'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['costo', 'Costo del envío (opcional)', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   gasto: { c: 'viajes', p: 'v', t: 'Gasto', big: ['costo', 'Monto del gasto'], f: [['nota', 'Concepto', 'text'], ['fecha', 'Fecha', 'date']] },
   gasolina: { c: 'gasolina', p: 'g', t: 'Carga de gasolina', big: ['importe', 'Importe'], f: [['km', 'Kilometraje actual (km)', 'number', 1], ['litros', 'Litros cargados', 'number', 1], ['fecha', 'Fecha', 'date']] },
@@ -494,8 +495,8 @@ function saveCobro(del) {
   save('meta', { ...cobro(), id: 'cobro', banco, clabe, titular }); closeSheet(); toast('Datos para cobrar guardados');
 }
 function sendWA() {
-  const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = pedNow(), env = gv('f_costo');
-  if (!ped && !env) { document.getElementById('ferr').textContent = 'Escribe el costo del viaje o el monto del pedido.'; return; }
+  const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = form.kind === 'recoger' ? gv('f_pedido') : pedNow(), env = gv('f_costo');
+  if (!env) { document.getElementById('ferr').textContent = 'Escribe el costo del envío para mandar la cuenta.'; return; }
   const hr = new Date().getHours(), sal = hr < 12 ? 'buen día' : hr < 19 ? 'buenas tardes' : 'buenas noches';
   const L = ['Hola, ' + sal + ' 👋', 'Soy el repartidor asignado para entregar su pedido' + (lugar && !EXC.includes(norm(lugar)) ? ' de *' + lugar + '*.' : '.'), ''];
   if (ped) L.push('Pedido: ' + $r(ped));
@@ -550,7 +551,7 @@ function openForm(kind, id) {
   ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')} · adelantaste ${$m(r.pedido)} en ${esc((PAGOS[r.pedidoPago] || '').toLowerCase())}</span></div>` : ''}
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}</div>
   ${body}${payBlock}
-  ${kind === 'viaje' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button>` : ''}
+  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
   <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
   ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}
@@ -590,7 +591,7 @@ function collect() {
     if (!(num(o.pedido) > 0)) return [null, 'Escribe cuánto pagaste por el pedido.'];
     if (!form.ppay) return [null, 'Elige cómo pagaste el pedido.'];
     o.pedidoPago = form.ppay; o.estado = st(prev) === 'cancelado' ? 'cancelado' : 'camino';
-    if (!form.id) { o.costo = null; o.tips = null; o.pago = null; o.montos = null; o.cobrado = null; }
+    if (!form.id) { o.tips = null; o.pago = null; o.montos = null; o.cobrado = null; }
     delete o.deleted; return [o, ''];
   }
   if (form.kind === 'gasto') { o.lugar = 'Gasto'; o.tips = null; }
