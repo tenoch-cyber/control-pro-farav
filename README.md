@@ -16,3 +16,5 @@ Netlify publica automáticamente cada cambio en la rama `main` (sin build; direc
 - `firestore.rules` — reglas de seguridad (copia; se publican desde la consola de Firebase).
 
 Los datos del usuario viven en Firestore bajo `users/{uid}/...`; nunca se guardan en este repositorio.
+
+Última prueba de publicación automática: 2026-11-27
