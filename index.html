@@ -152,7 +152,7 @@ const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
   // En Netlify el inicio de sesión pasa por el mismo dominio (ver netlify.toml) para que funcione en celulares
-  authDomain: /netlify\.app$/.test(location.hostname) ? location.hostname : "control-pro-2c97d.firebaseapp.com",
+  authDomain: /(netlify\.app|web\.app|firebaseapp\.com)$/.test(location.hostname) ? location.hostname : "control-pro-2c97d.firebaseapp.com",
   projectId: "control-pro-2c97d",
   storageBucket: "control-pro-2c97d.firebasestorage.app",
   messagingSenderId: "1050414768123",

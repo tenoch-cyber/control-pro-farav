@@ -1,5 +1,7 @@
 [build]
   publish = "."
+  # La app ahora se publica en Firebase Hosting; Netlify ya no publica (no gasta créditos)
+  ignore = "exit 0"
 
 [[headers]]
   for = "/sw.js"
