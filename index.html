@@ -618,7 +618,7 @@ function openForm(kind, id) {
     if (t === 'lugar') return `<label for="f_${k}">${l} *</label><input class="inp" id="f_${k}" value="${v}" autocomplete="off" autocapitalize="words" placeholder="Escribe y elige de la lista"><div class="chips" id="lugChips" style="margin-top:8px">${lugChips(r[k] || '')}</div>`;
     if (t === 'tel') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" type="tel" inputmode="tel" autocomplete="off" value="${v}" placeholder="10 dígitos">`;
     if (t === 'cli') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" autocapitalize="words" value="${v}" placeholder="Nombre">`;
-    if (t === 'dir') return `<div class="chips" id="cliChips" style="margin-top:8px"></div><label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" value="${v}" placeholder="Pega aquí la ubicación que te mandó o escribe la dirección"><div id="navBox">${navBtn(r[k])}</div>`;
+    if (t === 'dir') return `<div class="chips" id="cliChips" style="margin-top:8px"></div><label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" value="${v}" placeholder="Pega aquí la ubicación que te mandó o escribe la dirección"><div id="lastDir"></div><div id="navBox">${navBtn(r[k])}</div>`;
     return `<label for="f_${k}">${l}${req ? ' *' : ''}</label><input class="inp" id="f_${k}" type="${t === 'number' ? 'number' : t}" ${t === 'number' ? 'inputmode="decimal" step="any"' : ''} value="${v}">`;
   };
   const pairs = { recoger: [['cliente', 'tel']], viaje: [['cliente', 'tel'], ['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
@@ -839,7 +839,8 @@ document.addEventListener('click', async e => {
   if (d.entregar) { if (S.viajes[d.entregar]) openForm('viaje', d.entregar); return; }
   if (d.ppay) { form.ppay = d.ppay; try { localStorage.setItem('cp_ppay', d.ppay); } catch (x) {} updForm(); return; }
   if (d.pay) { form.pay = d.pay; try { localStorage.setItem('cp_pay', d.pay); } catch (x) {} updForm(); return; }
-  if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; const di = document.getElementById('f_dir'); if (di && !di.value && c.dir) { di.value = c.dir; document.getElementById('navBox').innerHTML = navBtn(c.dir); } document.getElementById('cliChips').innerHTML = ''; } return; }
+  if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; document.getElementById('cliChips').innerHTML = ''; const di = document.getElementById('f_dir'), ld = document.getElementById('lastDir'); if (ld) ld.innerHTML = c.dir && di && di.value.trim() !== c.dir ? `<button type="button" class="btn wide" data-lastdir="${esc(c.dir)}" style="margin-top:8px;font-size:13px;justify-content:flex-start;text-align:left">${ic('pin')} Usar última dirección: ${esc(c.dir.length > 40 ? c.dir.slice(0, 40) + '…' : c.dir)}</button>` : ''; } return; }
+  if (d.lastdir != null) { const di = document.getElementById('f_dir'); di.value = d.lastdir; document.getElementById('navBox').innerHTML = navBtn(d.lastdir); document.getElementById('lastDir').innerHTML = ''; return; }
   if (d.pk != null) { pinKey(d.pk); return; }
   if (d.venc) { if (S.venc[d.venc]) openVenc(d.venc); return; }
   if (d.vchip) { document.getElementById('v_nombre').value = d.vchip; return; }
