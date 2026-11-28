@@ -165,7 +165,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -547,7 +547,7 @@ function sendWA() {
   L.push('', '¡Gracias por su preferencia!');
   waSend(L);
 }
-const waCamino = () => waSend([saludo(), 'Soy el repartidor de su pedido' + deLugar() + '. Ya voy en camino 🛵, llego en unos minutos.']);
+const waCamino = () => waSend([saludo(), 'Ya recogí su pedido' + deLugar() + ' y voy en camino 🛵. Llego en unos minutos.']);
 const waLlegue = () => waSend(['Hola' + (fv('f_cliente') ? ', ' + fv('f_cliente').split(/\s+/)[0] : '') + ' 👋', 'Ya llegué con su pedido' + deLugar() + ', estoy afuera. 📍']);
 /* Clientes guardados (de viajes anteriores con teléfono) */
 function clientes() {
