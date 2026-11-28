@@ -97,6 +97,11 @@ body.light{background:var(--bg);color:var(--ink)}body.light nav.tabs,body.light 
 body.light .btn.wa{background:#dcfae6;border-color:#75e0a7;color:#067647}body.light .lock,body.light .moved{background:#f4f5f7}body.light .bars i{background:#98a2b3}
 body.light .inp,body.light input,body.light select{color:var(--ink)}
 body.light .btn.light,body.light .toast{color:#ffffff}body.light .toast button{color:#93c5fd}
+.sdot{width:34px;height:34px;border-radius:17px;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;padding:0;cursor:pointer}.sdot i{width:10px;height:10px;border-radius:5px;background:var(--ok);box-shadow:0 0 0 4px var(--okbg)}.sdot.w i{background:var(--amb);box-shadow:0 0 0 4px var(--ambbg);animation:pls 1s infinite alternate}.sdot.o i{background:var(--dim);box-shadow:none}@keyframes pls{to{opacity:.35}}
+.thin{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:12px;padding:10px 14px;border-radius:12px;border:1px dashed #1f3a5f;background:none;color:var(--link);font-size:13px;font-weight:600;cursor:pointer;text-align:left}
+details.cli{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:0 12px}details.cli>summary{list-style:none;cursor:pointer;padding:13px 0;font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center}details.cli>summary::-webkit-details-marker{display:none}details.cli>summary:after{content:'▾';color:var(--mute)}details.cli[open]>summary:after{content:'▴'}details.cli[open]{padding-bottom:12px}
+.cblk{margin-top:14px;border:1px solid #165c36;border-radius:14px;padding:12px;background:rgba(22,92,54,.12)}.cblk .lbl svg{width:16px;height:16px;flex:none}.cblk .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}.cblk .g4 button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:64px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:11.5px;font-weight:600;cursor:pointer;padding:4px}.cblk .g4 button span{font-size:20px;line-height:1}
+.savebar{position:sticky;bottom:0;margin:14px -18px 0;padding:10px 18px 12px;background:linear-gradient(transparent,#0b0c0f 18px);z-index:2}body.light .savebar{background:linear-gradient(transparent,#fff 18px)}body.light .cblk{background:#ecfdf3}
 .moved{position:fixed;inset:0;z-index:300;background:#07080a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center}.wa2 .btn{min-height:42px;font-size:13px;padding:0 8px}
 .lock{position:fixed;inset:0;z-index:200;background:#07080a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
 .lock .dots{display:flex;gap:14px}.lock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mute)}.lock .dots i.f{background:var(--ink);border-color:var(--ink)}
@@ -165,7 +170,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.5.1';
+const VERSION = '1.6.0';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -330,10 +335,9 @@ function subscribe() {
 }
 function syncPill() {
   const pend = COLS.some(c => meta[c].pending), on = navigator.onLine, cache = COLS.some(c => meta[c].cache);
-  if (!on) return `<span class="pill p-off">Sin conexión · guardado aquí</span>`;
-  if (pend) return `<span class="pill p-warn">Subiendo cambios…</span>`;
-  if (cache) return `<span class="pill p-off">Conectando…</span>`;
-  return `<span class="pill p-ok">Sincronizado</span>`;
+  if (!on) return `<span class="pill p-off">Sin señal</span>`;
+  const [cls, t] = pend ? ['w', 'Subiendo cambios a la nube…'] : cache ? ['o', 'Conectando…'] : ['', 'Todo guardado en la nube ✓'];
+  return `<button class="sdot ${cls}" type="button" data-sync="${t}" aria-label="${t}"><i></i></button>`;
 }
 addEventListener('online', () => render()); addEventListener('offline', () => render());
 
@@ -348,18 +352,18 @@ function vInicio() {
   const t = today(), w = sumRange(weekStart(), t), h = sumDay(live('viajes').filter(v => v.fecha === t), gasOn(t)), c = caja(t), pend = ccPend();
   const recent = movs().slice(0, 6);
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  return `<div class="hdr"><div class="t"><small>${esc(fdate(t, { weekday: 'long', day: 'numeric', month: 'long' }))}</small><b>Control Pro</b></div><div class="hdr-r">${syncPill()}${sunBtn()}${eyeBtn()}${gearBtn}</div></div>
+  return `<div class="hdr"><div class="t"><small>${esc(fdate(t, { weekday: 'long', day: 'numeric', month: 'long' }))}</small><b>Control Pro</b></div><div class="hdr-r">${syncPill()}${eyeBtn()}${gearBtn}</div></div>
   <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$h(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
   <div class="sub"><div><small>Hoy</small><b>${$h(h.real)}</b></div><div><small>Ganancia neta</small><b>${$h(w.neta)}</b></div></div></div>
-  <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
-  ${(() => { const d = new Date(); return d.getDay() === 0 && d.getHours() >= 14 && pend > 0.009 ? `<div class="alert" style="justify-content:space-between"><span style="display:flex;gap:10px;align-items:center">${ic('phone')}<span>Hoy es domingo: toca pagarle al Call Center <b>${$m(pend)}</b></span></span><button class="btn light" type="button" data-new="pagoscc" style="min-height:36px;padding:0 12px;font-size:13px">Abonar</button></div>` : ''; })()}
-  ${bkBanner()}
-  <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
-  ${alerts()}
   ${caminoCard()}
+  ${alerts()}
+  ${(() => { const d = new Date(); return d.getDay() === 0 && d.getHours() >= 14 && pend > 0.009 ? `<div class="alert" style="justify-content:space-between"><span style="display:flex;gap:10px;align-items:center">${ic('phone')}<span>Hoy es domingo: toca pagarle al Call Center <b>${$m(pend)}</b></span></span><button class="btn light" type="button" data-new="pagoscc" style="min-height:36px;padding:0 12px;font-size:13px">Abonar</button></div>` : ''; })()}
   ${confCard()}
-  ${deudasCard()}
+  <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
+  <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
   <button class="card mt ccrow" type="button" data-go="movs" style="width:100%;text-align:left;cursor:pointer;color:var(--ink)"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--okbg);color:var(--ok)">${ic('cash')}</span><div><div class="lbl">Efectivo en mano hoy</div><b style="font-size:17px">${$h(c.mano)}</b></div></div><span class="lbl">Corte de caja ›</span></button>
+  ${deudasCard()}
+  ${bkBanner()}
   ${!standalone && installEvt ? `<button class="card mt ccrow" type="button" data-act="install" style="width:100%;text-align:left;color:var(--ink);cursor:pointer"><div><b>Instalar Control Pro</b><div class="lbl">Ábrela como app, también sin internet</div></div><span class="lbl">Instalar ›</span></button>` : ''}
   <div class="card mt"><div class="sec"><b>Movimientos recientes</b><button type="button" data-go="movs">Ver todo</button></div>${recent.length ? recent.map(mvHtml).join('') : '<div class="empty">Aún no hay movimientos. Toca + para registrar tu primer viaje.</div>'}</div>${foot}`;
 }
@@ -723,7 +727,8 @@ function openForm(kind, id) {
   const pairs = { recoger: [['cliente', 'tel']], viaje: [['cliente', 'tel'], ['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
   const paired = new Set(pairs.flat());
   let body = '';
-  for (const f of F0.f) { if (paired.has(f[0])) { const p = pairs.find(p => p[0] === f[0]); if (p) body += `<div class="g2"><div>${fld(F0.f.find(x => x[0] === p[0]))}</div><div>${fld(F0.f.find(x => x[0] === p[1]))}</div></div>`; continue; } body += fld(f); }
+  const cliOpen = !!(r.cliente || r.tel || r.dir);
+  for (const f of F0.f) { if (f[0] === 'cliente') body += `<details class="cli" id="cliSec" ${cliOpen ? 'open' : ''}><summary>👤 Datos del cliente${r.tel ? ' · ' + esc(r.tel) : ' (opcional)'}</summary>`; if (paired.has(f[0])) { const p = pairs.find(p => p[0] === f[0]); if (p) body += `<div class="g2"><div>${fld(F0.f.find(x => x[0] === p[0]))}</div><div>${fld(F0.f.find(x => x[0] === p[1]))}</div></div>`; continue; } body += fld(f); if (f[0] === 'dir') body += '</details>'; }
   if (kind === 'recoger') body += `<label>¿Cómo pagaste el pedido?</label>${ppaySeg()}<p class="hint">Al entregar, abre el pedido desde “En camino” en Inicio y captura tu viaje y cómo te pagó el cliente.</p>${gpsNote(r, 'recoger', id)}`;
   if (kind === 'viaje') body += `<details class="mix" id="pedSec" ${hasPed(r) || entregar ? 'open' : ''} style="margin-top:12px"><summary style="font-weight:600;font-size:13px;color:var(--lab);padding:10px 0;cursor:pointer">Pedido pagado por mí ${entregar ? '' : '(opcional)'}</summary>
     <label for="f_pedido">Monto del pedido</label><input class="inp" id="f_pedido" type="number" inputmode="decimal" step="any" placeholder="0" value="${esc(r.pedido ?? '')}">
@@ -739,10 +744,10 @@ function openForm(kind, id) {
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}${kind === 'viaje' ? amtChips('f_costo') : ''}</div>
   ${body}${payBlock}${kind === 'viaje' ? `<label class="chk" id="tcBox" hidden><input type="checkbox" id="f_tconf" ${r.tconf === false ? '' : (id && r.tconf ? 'checked' : '')}> Ya vi la transferencia en mi banco</label>
   <div id="fotoBox" style="margin-top:12px">${r.foto ? `<button class="btn wide" type="button" data-act="verfoto" style="color:var(--link)">${ic('clip')} Ver comprobante</button>` : ''}<label class="btn wide" style="margin-top:8px;cursor:pointer">${ic('clip')} ${r.foto ? 'Cambiar comprobante' : 'Adjuntar comprobante (foto)'}<input type="file" id="f_foto" accept="image/*" hidden></label><p class="hint" id="fotoHint"></p></div>` : ''}${kind === 'viaje' ? gpsNote(r, entregar ? 'entregar' : 'viaje', id) : ''}
-  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button><div class="wa3"><button class="btn wa" type="button" data-act="wacam">🛵 En camino</button><button class="btn wa" type="button" data-act="wallegue">📍 Ya llegué</button><button class="btn" type="button" data-act="call" style="color:var(--link)">📞 Llamar</button></div>` : ''}
+  ${kind === 'viaje' || kind === 'recoger' ? `<div class="cblk"><div class="lbl" style="display:flex;gap:6px;align-items:center;color:#4ade80">${ic('wa')} Avisar al cliente</div><div class="g4"><button type="button" data-act="wa"><span>🧾</span>Cuenta</button><button type="button" data-act="wacam"><span>🛵</span>En camino</button><button type="button" data-act="wallegue"><span>📍</span>Ya llegué</button><button type="button" data-act="call"><span>📞</span>Llamar</button></div></div>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
-  <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
-  ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}
+  <div class="savebar"><button class="btn wide pri" type="submit">${saveTxt}</button>
+  ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}</div>
   ${entregar ? '<button class="btn wide dng" type="button" data-act="cancelped" id="cancelBtn" style="margin-top:8px">Se canceló el pedido</button>' : ''}
   ${id ? '<button class="btn wide dng" type="button" data-act="del" id="delBtn" style="margin-top:8px">Eliminar</button>' : ''}
   <p class="hint" style="text-align:center;margin-top:10px">Se guarda en tu teléfono y se sube cuando haya señal</p></form>`);
@@ -906,7 +911,7 @@ async function driveUpload(tok) {
 function bkBanner() {
   const at = lastBkAt(), days = at ? Math.floor((Date.now() - at) / 864e5) : null;
   if (days !== null && days < 7) return '';
-  return `<div class="card mt ccrow" style="border-color:#1f3a5f"><div><b>${days === null ? 'Aún no tienes un respaldo' : 'Llevas ' + days + ' días sin respaldo'}</b><div class="lbl">Guarda una copia en tu Google Drive</div></div><button class="btn pri" type="button" data-act="drivebk" style="min-height:40px">Respaldar</button></div>`;
+  return `<button class="thin" type="button" data-act="drivebk"><span>☁️ ${days === null ? 'Aún no tienes un respaldo en Drive' : 'Llevas ' + days + ' días sin respaldo'}</span><span>Respaldar ›</span></button>`;
 }
 function openImport() {
   openPanel(`<div class="ph"><b>Importar respaldo</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
@@ -946,6 +951,7 @@ document.addEventListener('click', async e => {
   if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; document.getElementById('cliChips').innerHTML = ''; cliNoteRefresh(); const di = document.getElementById('f_dir'), ld = document.getElementById('lastDir'); if (ld) ld.innerHTML = c.dir && di && di.value.trim() !== c.dir ? `<button type="button" class="btn wide" data-lastdir="${esc(c.dir)}" style="margin-top:8px;font-size:13px;justify-content:flex-start;text-align:left">${ic('pin')} Usar última dirección: ${esc(c.dir.length > 40 ? c.dir.slice(0, 40) + '…' : c.dir)}</button>` : ''; } return; }
   if (d.lastdir != null) { const di = document.getElementById('f_dir'); di.value = d.lastdir; document.getElementById('navBox').innerHTML = navBtn(d.lastdir); document.getElementById('lastDir').innerHTML = ''; return; }
   if (d.pk != null) { pinKey(d.pk); return; }
+  if (d.sync) { toast(d.sync); return; }
   if (d.theme) { try { localStorage.setItem('cp_theme', d.theme); } catch (x) {} applyTheme(); render(); return; }
   if (d.amt) { const el = document.getElementById(d.for); if (el) { el.value = d.amt; el.dispatchEvent(new Event('input', { bubbles: true })); updForm(); } return; }
   if (d.deuda) { if (S.deudas[d.deuda]) openDeuda(d.deuda); return; }
