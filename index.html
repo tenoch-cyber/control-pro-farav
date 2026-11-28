@@ -88,7 +88,10 @@ table{border-collapse:collapse;width:100%;font-size:12px}
 th,td{padding:8px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2)}
 th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}
 .btn.wa{background:#0b2e1c;border-color:#165c36;color:#4ade80}
-.wa2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.wa2 .btn{min-height:42px;font-size:13px;padding:0 8px}
+.wa2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.wa3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}.wa3 .btn{min-height:42px;font-size:12px;padding:0 4px}
+.chk{display:flex;gap:10px;align-items:center;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:14px}.chk input{width:22px;height:22px;accent-color:#22c55e}
+.cnote{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--ambbg);border:1px solid #4a3410;color:#fedf89;font-size:13px}
+.moved{position:fixed;inset:0;z-index:300;background:#07080a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center}.wa2 .btn{min-height:42px;font-size:13px;padding:0 8px}
 .lock{position:fixed;inset:0;z-index:200;background:#07080a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
 .lock .dots{display:flex;gap:14px}.lock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mute)}.lock .dots i.f{background:var(--ink);border-color:var(--ink)}
 .lock .kp{display:grid;grid-template-columns:repeat(3,72px);gap:14px}.lock .kp button{height:72px;border-radius:36px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:26px;font-weight:600;cursor:pointer}
@@ -156,7 +159,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -224,6 +227,9 @@ const I = {
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  clip: '<path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>',
+  check: '<path d="M4 12l5 5L20 6"/>',
   nav: '<path d="M3 11l18-8-8 18-2-8z"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
@@ -286,7 +292,7 @@ function movs(filterFn) {
     if (isG(v)) out.push({ c: 'viajes', r: v, ico: 'out', cls: 'gout', bg: 'var(--badbg)', fg: 'var(--bad)', t: v.nota || 'Gasto', s: 'Gasto · ' + payTxt('viajes', v), a: -num(v.costo) });
     else if (st(v) === 'camino') out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gcc', bg: 'var(--ambbg)', fg: 'var(--amb)', t: v.lugar || 'Pedido', s: 'En camino · adelantaste ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || 'sin forma') + ')', a: -num(v.pedido) });
     else if (st(v) === 'cancelado') out.push({ c: 'viajes', r: v, ico: 'x', cls: 'gout', bg: 'var(--badbg)', fg: 'var(--bad)', t: (v.lugar || 'Pedido') + ' · cancelado', s: 'Pedido cancelado · perdiste ' + $m(v.pedido), a: -num(v.pedido) });
-    else { const d = difOf(v); out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gin', bg: 'var(--blubg)', fg: 'var(--link)', t: v.lugar || 'Viaje', s: [hasPed(v) ? 'pedido ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || '?') + ')' : '', num(v.tips) ? 'propina ' + $m(v.tips) : '', d < -0.009 ? 'pagó ' + $m(-d) + ' de menos' : d > 0.009 ? 'pagó ' + $m(d) + ' de más' : '', num(v.km) ? kmTxt(v.km) : '', payTxt('viajes', v), ccOf(v) ? '' : 'sin Call Center', v.nota || ''].filter(Boolean).join(' · '), a: num(v.costo) }); }
+    else { const d = difOf(v); out.push({ c: 'viajes', r: v, ico: 'bike', cls: 'gin', bg: 'var(--blubg)', fg: 'var(--link)', t: v.lugar || 'Viaje', s: [hasPed(v) ? 'pedido ' + $m(v.pedido) + ' (' + (PAGOS[v.pedidoPago] || '?') + ')' : '', num(v.tips) ? 'propina ' + $m(v.tips) : '', d < -0.009 ? 'pagó ' + $m(-d) + ' de menos' : d > 0.009 ? 'pagó ' + $m(d) + ' de más' : '', num(v.km) ? kmTxt(v.km) : '', payTxt('viajes', v), v.tconf === false && trOf(v) > 0 ? '⏳ transf. por confirmar' : '', v.foto ? '📎 comprobante' : '', ccOf(v) ? '' : 'sin Call Center', v.nota || ''].filter(Boolean).join(' · '), a: num(v.costo) }); }
   }
   for (const g of live('gasolina')) out.push({ c: 'gasolina', r: g, ico: 'fuel', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: 'Gasolina · ' + f1(g.litros) + ' L', s: num(g.km).toLocaleString('es-MX') + ' km · ' + payTxt('gasolina', g), a: -num(g.importe) });
   for (const m of live('mant')) out.push({ c: 'mant', r: m, ico: 'wrench', cls: 'gout', bg: 'var(--seg)', fg: 'var(--ink)', t: m.servicio || m.producto || 'Taller', s: (m.tipo || 'Taller') + ' · ' + payTxt('mant', m), a: -mantTot(m) });
@@ -344,6 +350,7 @@ function vInicio() {
   <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
   ${alerts()}
   ${caminoCard()}
+  ${confCard()}
   <button class="card mt ccrow" type="button" data-go="movs" style="width:100%;text-align:left;cursor:pointer;color:var(--ink)"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--okbg);color:var(--ok)">${ic('cash')}</span><div><div class="lbl">Efectivo en mano hoy</div><b style="font-size:17px">${$h(c.mano)}</b></div></div><span class="lbl">Corte de caja ›</span></button>
   ${!standalone && installEvt ? `<button class="card mt ccrow" type="button" data-act="install" style="width:100%;text-align:left;color:var(--ink);cursor:pointer"><div><b>Instalar Control Pro</b><div class="lbl">Ábrela como app, también sin internet</div></div><span class="lbl">Instalar ›</span></button>` : ''}
   <div class="card mt"><div class="sec"><b>Movimientos recientes</b><button type="button" data-go="movs">Ver todo</button></div>${recent.length ? recent.map(mvHtml).join('') : '<div class="empty">Aún no hay movimientos. Toca + para registrar tu primer viaje.</div>'}</div>${foot}`;
@@ -365,7 +372,7 @@ function cajaCard(d) {
   <div class="kv tot"><span>Efectivo en mano</span><b>${$m(c.mano)}</b></div>
   <div class="kv"><span>Neto en transferencias</span><b>${$m(c.dig('transferencia'))}</b></div>
   <div class="kv"><span>Neto en tarjeta</span><b>${$m(c.dig('tarjeta'))}</b></div>
-  ${c.sin ? `<p class="hint">${c.sin} registro${c.sin > 1 ? 's' : ''} sin forma de pago no entra${c.sin > 1 ? 'n' : ''} en el corte.</p>` : ''}</div>`;
+  ${c.sin ? `<p class="hint">${c.sin} registro${c.sin > 1 ? 's' : ''} sin forma de pago no entra${c.sin > 1 ? 'n' : ''} en el corte.</p>` : ''}<button class="btn wide wa" type="button" data-resumen="${d}" style="margin-top:12px">${ic('wa')} Mandar resumen del día por WhatsApp</button></div>`;
 }
 
 function vMovs() {
@@ -605,6 +612,44 @@ function gpsNote(r, mode, id) {
   else return '';
   return `<div class="note" style="margin-top:12px"><span style="color:var(--link)">${ic('pin')}</span><span>${t}${url ? ` · <a href="${url}" target="_blank" rel="noopener" style="color:var(--link)">Ver en Maps</a>` : ''}</span></div>`;
 }
+/* Transferencias por confirmar */
+const trOf = v => { const s = split('viajes', v); return s ? s.transferencia : 0; };
+const porConf = () => live('viajes').filter(v => done(v) && !isG(v) && v.tconf === false && trOf(v) > 0).sort((a, b) => String(b.fecha).localeCompare(a.fecha));
+function confCard() {
+  const l = porConf(); if (!l.length) return '';
+  return `<div class="card mt" style="border-color:#1e3a5f"><div class="sec"><b>Transferencias por confirmar (${l.length})</b><span class="lbl">${$m(l.reduce((a, v) => a + trOf(v), 0))}</span></div>${l.map(v => `<div class="mv" style="cursor:default"><span class="ico" style="background:var(--blubg);color:var(--link)">${ic('xfer')}</span><span class="tx"><b>${esc(v.cliente || v.lugar || 'Viaje')}</b><small>${esc(dayLabel(v.fecha))}${v.tel ? ' · ' + esc(v.tel) : ''}</small></span><b style="margin-right:8px">${$m(trOf(v))}</b><button class="btn light" type="button" data-tconf="${esc(v.id)}" style="min-height:36px;padding:0 10px;font-size:13px">${ic('check')} Llegó</button></div>`).join('')}<p class="hint">Toca "Llegó" cuando la veas en tu banco.</p></div>`;
+}
+/* Notas por cliente (guardadas en tu cuenta) */
+const cnotas = () => (S.meta.cnotas && S.meta.cnotas.n) || {};
+function cliNoteHtml(tel, edit) {
+  const k = waNum(tel); if (!k) return '';
+  const n = cnotas()[k] || '';
+  if (edit) return `<div style="margin-top:8px"><input class="inp" id="cnIn" value="${esc(n)}" placeholder="Ej. edificio azul, tocar 2 veces · ⚠️ pagó de menos"><div class="wa2"><button class="btn" type="button" data-act="cnsave">Guardar nota</button><button class="btn" type="button" data-act="cncancel">Cancelar</button></div></div>`;
+  return n ? `<div class="cnote">📝 ${esc(n)} <button type="button" data-act="cnedit" style="background:none;border:0;color:var(--link);font-size:13px;cursor:pointer">Editar</button></div>` : `<button type="button" data-act="cnedit" style="background:none;border:0;color:var(--link);font-size:13px;padding:8px 0;cursor:pointer">+ Nota para este cliente</button>`;
+}
+const cliNoteRefresh = () => { const b = document.getElementById('cliNote'); if (b) b.innerHTML = cliNoteHtml(fv('f_tel')); };
+/* Foto del comprobante: se reduce y se guarda aparte */
+function fotoPick(file) {
+  const hint = document.getElementById('fotoHint'); if (!file) return;
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => { const m = 1000, s = Math.min(1, m / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); let q = .7, d = c.toDataURL('image/jpeg', q); while (d.length > 700000 && q > .3) { q -= .1; d = c.toDataURL('image/jpeg', q); } URL.revokeObjectURL(url); form.foto = d; hint.textContent = 'Foto lista ✓ (' + Math.round(d.length * .75 / 1024) + ' KB). Se guarda al guardar el viaje.'; };
+  img.onerror = () => { hint.textContent = 'No se pudo leer la imagen.'; };
+  img.src = url;
+}
+async function verFoto(id) {
+  toast('Cargando comprobante…');
+  try { const s = await F.getDoc(docRef('fotos', id)); const d = s.exists() && s.data().img; if (!d) { toast('No se encontró la foto'); return; }
+    const o = document.createElement('div'); o.className = 'moved'; o.style.zIndex = 250; o.innerHTML = `<img src="${d}" alt="Comprobante" style="max-width:100%;max-height:78vh;border-radius:12px"><button class="btn wide light" type="button" data-act="cerrarfoto" style="max-width:320px">Cerrar</button>`; document.body.appendChild(o);
+  } catch (e) { toast('No se pudo abrir la foto (¿sin internet?)'); }
+}
+/* Resumen del día por WhatsApp */
+function resumenWA(d) {
+  const x = sumDay(live('viajes').filter(v => v.fecha === d), gasOn(d)), c = caja(d), cb = cobros(live('viajes').filter(v => v.fecha === d)), pc = porConf().filter(v => v.fecha === d);
+  const L = ['*Resumen del día · ' + fdate(d, { weekday: 'short', day: 'numeric', month: 'short' }) + '*', '', 'Pedidos: ' + x.p, 'Viajes: ' + $r(x.ing), 'Propinas: ' + $r(x.tip)];
+  if (x.gl) L.push('Gasolina: −' + $r(x.gl)); if (x.gas) L.push('Gastos: −' + $r(x.gas)); if (x.perd) L.push('Pérdidas: −' + $r(x.perd));
+  L.push('*Dinero real: ' + $r(x.real) + '*', 'Call Center del día: ' + $r(x.cc), '', 'Cobrado en efectivo: ' + $r(cb.efectivo), 'Transferencias: ' + $r(cb.transferencia) + (pc.length ? ' (' + pc.length + ' por confirmar)' : ''), 'Tarjeta: ' + $r(cb.tarjeta), 'Efectivo en mano: ' + $r(c.mano), '', '— Control Pro · Grupo Farav');
+  window.open('https://wa.me/?text=' + encodeURIComponent(L.join('\n')), '_blank');
+}
 const PICO = { efectivo: 'cash', transferencia: 'xfer', tarjeta: 'card', mixto: 'mix' };
 const ppaySeg = () => `<div class="seg" style="grid-template-columns:repeat(3,1fr)" role="group" aria-label="Cómo pagaste el pedido">${K3.map(k => `<button type="button" class="pi" data-ppay="${k}">${ic(PICO[k])}${k === 'transferencia' ? 'Transf.' : PAGOS[k]}</button>`).join('')}</div>`;
 function openForm(kind, id) {
@@ -620,7 +665,7 @@ function openForm(kind, id) {
     if (t === 'lugar') return `<label for="f_${k}">${l} *</label><input class="inp" id="f_${k}" value="${v}" autocomplete="off" autocapitalize="words" placeholder="Escribe y elige de la lista"><div class="chips" id="lugChips" style="margin-top:8px">${lugChips(r[k] || '')}</div>`;
     if (t === 'tel') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" type="tel" inputmode="tel" autocomplete="off" value="${v}" placeholder="10 dígitos">`;
     if (t === 'cli') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" autocapitalize="words" value="${v}" placeholder="Nombre">`;
-    if (t === 'dir') return `<div class="chips" id="cliChips" style="margin-top:8px"></div><label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" value="${v}" placeholder="Pega aquí la ubicación que te mandó o escribe la dirección"><div id="lastDir"></div><div id="navBox">${navBtn(r[k])}</div>`;
+    if (t === 'dir') return `<div class="chips" id="cliChips" style="margin-top:8px"></div><div id="cliNote">${cliNoteHtml(r.tel)}</div><label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" value="${v}" placeholder="Pega aquí la ubicación que te mandó o escribe la dirección"><div id="lastDir"></div><div id="navBox">${navBtn(r[k])}</div>`;
     return `<label for="f_${k}">${l}${req ? ' *' : ''}</label><input class="inp" id="f_${k}" type="${t === 'number' ? 'number' : t}" ${t === 'number' ? 'inputmode="decimal" step="any"' : ''} value="${v}">`;
   };
   const pairs = { recoger: [['cliente', 'tel']], viaje: [['cliente', 'tel'], ['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
@@ -640,8 +685,9 @@ function openForm(kind, id) {
   openPanel(`<form id="frm" novalidate><div class="ph"><b>${title}</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
   ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')}${hasPed(r) ? ' · adelantaste ' + $m(r.pedido) + ' en ' + esc((PAGOS[r.pedidoPago] || '').toLowerCase()) : ' · sin pedido adelantado'}</span></div>` : ''}
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}</div>
-  ${body}${payBlock}${kind === 'viaje' ? gpsNote(r, entregar ? 'entregar' : 'viaje', id) : ''}
-  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button><div class="wa2"><button class="btn wa" type="button" data-act="wacam">🛵 Voy en camino</button><button class="btn wa" type="button" data-act="wallegue">📍 Ya llegué</button></div>` : ''}
+  ${body}${payBlock}${kind === 'viaje' ? `<label class="chk" id="tcBox" hidden><input type="checkbox" id="f_tconf" ${r.tconf === false ? '' : (id && r.tconf ? 'checked' : '')}> Ya vi la transferencia en mi banco</label>
+  <div id="fotoBox" style="margin-top:12px">${r.foto ? `<button class="btn wide" type="button" data-act="verfoto" style="color:var(--link)">${ic('clip')} Ver comprobante</button>` : ''}<label class="btn wide" style="margin-top:8px;cursor:pointer">${ic('clip')} ${r.foto ? 'Cambiar comprobante' : 'Adjuntar comprobante (foto)'}<input type="file" id="f_foto" accept="image/*" hidden></label><p class="hint" id="fotoHint"></p></div>` : ''}${kind === 'viaje' ? gpsNote(r, entregar ? 'entregar' : 'viaje', id) : ''}
+  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button><div class="wa3"><button class="btn wa" type="button" data-act="wacam">🛵 En camino</button><button class="btn wa" type="button" data-act="wallegue">📍 Ya llegué</button><button class="btn" type="button" data-act="call" style="color:var(--link)">📞 Llamar</button></div>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
   <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
   ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}
@@ -666,6 +712,7 @@ function updForm() {
   if (ch) { if (ped > 0) { const d = formTotal() - expNow(); ch.textContent = Math.abs(d) < .01 ? 'Pedido + viaje + propina = ' + $m(expNow()) + ' ✓' : d < 0 ? 'Te pagó ' + $m(-d) + ' de menos: se registra como pérdida.' : 'Te pagó ' + $m(d) + ' de más: se suma como propina.'; ch.style.color = Math.abs(d) < .01 ? 'var(--ok)' : d < 0 ? 'var(--bad)' : 'var(--amb)'; } else ch.textContent = 'Si no adelantaste dinero, deja el monto del pedido vacío.'; }
   const pl = document.getElementById('payLbl'); if (pl && form.kind === 'viaje') pl.textContent = ped > 0 ? '¿Cómo te pagó el cliente? (total)' : 'Método de pago';
   const mb = document.getElementById('mixBox'); if (mb) mb.hidden = form.pay !== 'mixto';
+  const tb = document.getElementById('tcBox'); if (tb) tb.hidden = !(form.pay === 'transferencia' || (form.pay === 'mixto' && mixVals().transferencia > 0));
   const el = document.getElementById('mixSum'); if (el) { const mm = mixVals(), tot = formTotal(), sm = mm.efectivo + mm.transferencia + mm.tarjeta, d = tot - sm, ok = Math.abs(d) < .01; el.textContent = ok ? 'Cuadra: ' + $m(sm) + ' ✓' : (d > 0 ? 'Faltan ' : 'Sobran ') + $m(Math.abs(d)) + ' para llegar a ' + $m(tot); el.style.color = ok ? 'var(--ok)' : 'var(--bad)'; }
   const ct = document.getElementById('ccTag'), lg = document.getElementById('f_lugar'); if (ct && lg) { const v = norm(lg.value); ct.textContent = v === 'gasto' ? 'Esto es un gasto' : EXC.includes(v) ? 'Sin pago al Call Center' : '+$5 al Call Center'; }
 }
@@ -684,6 +731,7 @@ function collect() {
     delete o.deleted; return [o, ''];
   }
   if (form.kind === 'gasto') { o.lugar = 'Gasto'; o.tips = null; }
+  if (form.kind === 'viaje') { const tc = document.getElementById('f_tconf'), tb = document.getElementById('tcBox'); if (tc && tb && !tb.hidden) o.tconf = tc.checked; else delete o.tconf; if (form.foto) o.foto = true; }
   if (form.kind === 'viaje') {
     const ped = pedNow();
     if (ped > 0 && !isG(o)) { if (!form.ppay) return [null, 'Elige con qué pagaste el pedido.']; o.pedido = ped; o.pedidoPago = form.ppay; const cv = document.getElementById('f_cobrado').value; o.cobrado = cv === '' ? +expTot(o).toFixed(2) : num(cv); }
@@ -699,6 +747,7 @@ function collect() {
 function submitForm(more) {
   const [o, err] = collect(); if (!o) { document.getElementById('ferr').textContent = err; return; }
   const kind = form.kind, wasEdit = !!form.id, ent = form.entregar; save(FORMS[kind].c, o);
+  if (form.foto) { const img = form.foto; F.setDoc(docRef('fotos', o.id), { id: o.id, img, updatedAt: Date.now() }).catch(e => toast('No se pudo guardar la foto: ' + (e.code || e.message))); }
   if (kind === 'recoger' && !wasEdit) captureGps(o.id, 'gpsA'); else if (ent && o.gpsA) captureGps(o.id, 'gpsB');
   if (more) { toast('Viaje guardado'); openForm(kind); } else { closeSheet(); toast(ent ? 'Pedido entregado' : kind === 'recoger' && !wasEdit ? 'En camino · ábrelo en Inicio al entregar' : wasEdit ? 'Cambios guardados' : 'Guardado'); }
 }
@@ -841,9 +890,11 @@ document.addEventListener('click', async e => {
   if (d.entregar) { if (S.viajes[d.entregar]) openForm('viaje', d.entregar); return; }
   if (d.ppay) { form.ppay = d.ppay; try { localStorage.setItem('cp_ppay', d.ppay); } catch (x) {} updForm(); return; }
   if (d.pay) { form.pay = d.pay; try { localStorage.setItem('cp_pay', d.pay); } catch (x) {} updForm(); return; }
-  if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; document.getElementById('cliChips').innerHTML = ''; const di = document.getElementById('f_dir'), ld = document.getElementById('lastDir'); if (ld) ld.innerHTML = c.dir && di && di.value.trim() !== c.dir ? `<button type="button" class="btn wide" data-lastdir="${esc(c.dir)}" style="margin-top:8px;font-size:13px;justify-content:flex-start;text-align:left">${ic('pin')} Usar última dirección: ${esc(c.dir.length > 40 ? c.dir.slice(0, 40) + '…' : c.dir)}</button>` : ''; } return; }
+  if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; document.getElementById('cliChips').innerHTML = ''; cliNoteRefresh(); const di = document.getElementById('f_dir'), ld = document.getElementById('lastDir'); if (ld) ld.innerHTML = c.dir && di && di.value.trim() !== c.dir ? `<button type="button" class="btn wide" data-lastdir="${esc(c.dir)}" style="margin-top:8px;font-size:13px;justify-content:flex-start;text-align:left">${ic('pin')} Usar última dirección: ${esc(c.dir.length > 40 ? c.dir.slice(0, 40) + '…' : c.dir)}</button>` : ''; } return; }
   if (d.lastdir != null) { const di = document.getElementById('f_dir'); di.value = d.lastdir; document.getElementById('navBox').innerHTML = navBtn(d.lastdir); document.getElementById('lastDir').innerHTML = ''; return; }
   if (d.pk != null) { pinKey(d.pk); return; }
+  if (d.tconf) { const v = S.viajes[d.tconf]; if (v) { save('viajes', { ...v, tconf: true }); toast('Transferencia confirmada ✓'); } return; }
+  if (d.resumen) { resumenWA(d.resumen); return; }
   if (d.venc) { if (S.venc[d.venc]) openVenc(d.venc); return; }
   if (d.vchip) { document.getElementById('v_nombre').value = d.vchip; return; }
   if (d.chip) { document.getElementById('f_lugar').value = d.chip; document.getElementById('lugChips').innerHTML = lugChips(d.chip); updForm(); return; }
@@ -864,6 +915,12 @@ document.addEventListener('click', async e => {
     case 'vdel': { if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para eliminar'; return; } const prev = { ...S.venc[form.id] }; save('venc', { ...prev, deleted: true }); closeSheet(); toast('Vencimiento eliminado', () => save('venc', { ...prev, deleted: false })); break; }
     case 'wa': sendWA(); break;
     case 'wacam': waCamino(); break;
+    case 'call': { const n = waNum(fv('f_tel')); if (!n) { document.getElementById('ferr').textContent = 'Escribe el teléfono del cliente (10 dígitos).'; return; } location.href = 'tel:+' + n; break; }
+    case 'cnedit': { const bx = document.getElementById('cliNote'); if (!waNum(fv('f_tel'))) { document.getElementById('ferr').textContent = 'Primero escribe el teléfono del cliente.'; return; } bx.innerHTML = cliNoteHtml(fv('f_tel'), true); const i = document.getElementById('cnIn'); i && i.focus(); break; }
+    case 'cncancel': cliNoteRefresh(); break;
+    case 'cnsave': { const k = waNum(fv('f_tel')), t = (document.getElementById('cnIn').value || '').trim(), n = { ...cnotas() }; if (t) n[k] = t; else delete n[k]; save('meta', { id: 'cnotas', n }); cliNoteRefresh(); toast(t ? 'Nota guardada' : 'Nota borrada'); break; }
+    case 'verfoto': if (form && form.id) verFoto(form.id); break;
+    case 'cerrarfoto': { const o = b.closest('.moved'); if (o) o.remove(); break; }
     case 'wallegue': waLlegue(); break;
     case 'pinset': openPin(); break;
     case 'pinsave': savePin(); break;
@@ -885,8 +942,9 @@ document.addEventListener('click', async e => {
 });
 function closeIfOpen() { if (document.getElementById('sheet').classList.contains('open')) { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; } }
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+document.addEventListener('change', e => { if (e.target.id === 'f_foto') fotoPick(e.target.files && e.target.files[0]); });
 document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } else if (e.target.id === 'cfrm') { e.preventDefault(); saveCobro(false); } else if (e.target.id === 'pfrm') { e.preventDefault(); savePin(); } });
-document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cliente' || e.target.id === 'f_tel') cliChips(); if (e.target.id === 'f_dir') { const nb = document.getElementById('navBox'); if (nb) nb.innerHTML = navBtn(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
+document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cliente' || e.target.id === 'f_tel') cliChips(); if (e.target.id === 'f_tel') cliNoteRefresh(); if (e.target.id && e.target.id.startsWith('m_')) updForm(); if (e.target.id === 'f_dir') { const nb = document.getElementById('navBox'); if (nb) nb.innerHTML = navBtn(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
 document.addEventListener('change', e => {
   if (e.target.id === 'dayIn' && e.target.value) { dayView = e.target.value; render(); }
   if (e.target.id === 'fondoIn') { const dd = e.target.dataset.d, v = e.target.value === '' ? 0 : num(e.target.value); if (v === fondoOf(dd)) return; save('fondos', { ...(S.fondos[dd] || {}), id: dd, fecha: dd, monto: v }); toast('Fondo fijo guardado'); }
@@ -959,6 +1017,11 @@ async function savePin() {
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 60000) lock(); });
 
+if (/netlify\.app$/.test(location.hostname)) {
+  const mv = document.createElement('div'); mv.className = 'moved';
+  mv.innerHTML = `<img src="icon-192.png" alt="" style="width:84px;height:84px;border-radius:20px"><b style="font-size:20px">Control Pro se mudó</b><p style="color:var(--mute);max-width:320px;line-height:1.5">Ahora la app está en <b style="color:var(--ink)">grupofarav.web.app</b>. Tus datos están ahí mismo: solo entra con tu cuenta de Google.</p><a class="btn pri wide" href="https://grupofarav.web.app/" style="max-width:320px">Abrir la nueva dirección</a><p class="hint" style="max-width:320px">Después instálala desde Chrome (⋮ → Instalar app) y borra este ícono.</p><div style="position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));font-size:11px;color:var(--dim)">Control Pro · © 2026 Grupo Farav</div>`;
+  document.body.appendChild(mv);
+}
 A.onAuthStateChanged(auth, u => {
   user = u;
   if (!u) { unsubs.forEach(x => x()); unsubs = []; COLS.forEach(c => { S[c] = {}; }); document.getElementById('app').innerHTML = vLogin(lastErr); return; }

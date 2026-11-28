@@ -1,7 +1,8 @@
 [build]
   publish = "."
-  # La app ahora se publica en Firebase Hosting; Netlify ya no publica (no gasta créditos)
-  ignore = "exit 0"
+  # La app vive en Firebase Hosting (grupofarav.web.app). Netlify solo publica si cambia este archivo,
+  # para mostrar el aviso de mudanza; así no gasta créditos en cada cambio.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- netlify.toml"
 
 [[headers]]
   for = "/sw.js"
