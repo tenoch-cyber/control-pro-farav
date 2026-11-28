@@ -539,7 +539,7 @@ function waSend(L) {
 function sendWA() {
   const ped = form.kind === 'recoger' ? gv('f_pedido') : pedNow(), env = gv('f_costo');
   if (!env) { document.getElementById('ferr').textContent = 'Escribe el costo del envío para mandar la cuenta.'; return; }
-  const L = [saludo(), 'Soy el repartidor asignado para entregar su pedido' + deLugar() + '.', ''];
+  const L = [saludo(), 'Soy el repartidor asignado para la entrega de su pedido' + deLugar() + '.', ''];
   if (ped) L.push('Pedido: ' + $r(ped));
   if (env) L.push('Envío: ' + $r(env));
   L.push('*Total a pagar: ' + $r(ped + env) + '*', '', 'Puede pagar en efectivo, transferencia bancaria o tarjeta (con tarjeta se cobra comisión).');
