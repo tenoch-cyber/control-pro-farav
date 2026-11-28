@@ -88,6 +88,11 @@ table{border-collapse:collapse;width:100%;font-size:12px}
 th,td{padding:8px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2)}
 th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}
 .btn.wa{background:#0b2e1c;border-color:#165c36;color:#4ade80}
+.wa2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.wa2 .btn{min-height:42px;font-size:13px;padding:0 8px}
+.lock{position:fixed;inset:0;z-index:200;background:#07080a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+.lock .dots{display:flex;gap:14px}.lock .dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--mute)}.lock .dots i.f{background:var(--ink);border-color:var(--ink)}
+.lock .kp{display:grid;grid-template-columns:repeat(3,72px);gap:14px}.lock .kp button{height:72px;border-radius:36px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:26px;font-weight:600;cursor:pointer}
+.lock .kp button.nb{background:none;border:0;font-size:15px;color:var(--mute)}.lock.bad .dots{animation:shk .35s}@keyframes shk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .alert{display:flex;gap:10px;align-items:center;background:var(--ambbg);border:1px solid #4a3410;color:#fedf89;border-radius:14px;padding:12px 14px;font-size:13px;margin-top:12px}
 .empty{color:var(--mute);text-align:center;padding:22px 8px;font-size:14px}
 .foot{font-size:11px;color:var(--dim);padding:18px 4px 4px}
@@ -130,8 +135,12 @@ textarea.inp{height:120px;padding:12px 14px;font-size:13px;font-family:ui-monosp
 body.nb{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 body.nb nav.tabs{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 body.nb .toast{bottom:calc(164px + env(safe-area-inset-bottom))}
-.nbfoot{display:none;position:absolute;left:16px;bottom:calc(30px + env(safe-area-inset-bottom));font-size:11px;color:var(--dim)}
-body.nb .nbfoot{display:block}
+.nbfoot{display:block;position:absolute;left:16px;bottom:calc(6px + env(safe-area-inset-bottom));font-size:11px;color:var(--dim)}
+body.nb .nbfoot{bottom:calc(30px + env(safe-area-inset-bottom))}
+body:not(.nb) nav.tabs{padding-bottom:calc(26px + env(safe-area-inset-bottom))}
+body:not(.nb){padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+body:not(.nb) .panel{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+body:not(.nb) .toast{bottom:calc(116px + env(safe-area-inset-bottom))}
 .sfoot{position:fixed;z-index:41;pointer-events:none}
 body.nb .panel{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
 body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
@@ -147,7 +156,7 @@ body.nb .login{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
 
 <script type="module">
 /* Control Pro v1.0.0 · Desarrollada por Grupo Farav · © 2026 Grupo Farav. Todos los derechos reservados. */
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
 const firebaseConfig = {
   apiKey: "AIzaSyBAhVFuxZUAEMwJI74v1lIQrMMwyMiNwlw",
@@ -215,6 +224,8 @@ const I = {
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  nav: '<path d="M3 11l18-8-8 18-2-8z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   pin: '<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
   wa: '<path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a5 5 0 0 1-2.7-2.7l.8-1-1-2z"/>',
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
@@ -265,7 +276,7 @@ const VPRE = ['Seguro', 'Tarjeta de circulación', 'Licencia', 'Verificación', 
 const daysTo = f => Math.round((new Date(f + 'T12:00') - new Date(today() + 'T12:00')) / 864e5);
 const vencTxt = r => { const d = daysTo(r.fecha); return d < 0 ? ['Vencido hace ' + (-d) + (d === -1 ? ' día' : ' días'), 'var(--bad)', 'var(--badbg)'] : d === 0 ? ['Vence hoy', 'var(--bad)', 'var(--badbg)'] : d <= 30 ? ['Vence en ' + d + (d === 1 ? ' día' : ' días'), 'var(--amb)', 'var(--ambbg)'] : ['Vence el ' + fdate(r.fecha, { day: 'numeric', month: 'short', year: 'numeric' }), 'var(--mute)', 'var(--seg)']; };
 const vencList = () => live('venc').filter(r => r.fecha).sort((a, b) => a.fecha.localeCompare(b.fecha));
-function alerts() { const o = odo(), t = today(), out = []; for (const v of vencList()) { const d = daysTo(v.fecha); if (d <= 15) out.push(`\u0001${esc(v.nombre || 'Documento')}: ${d < 0 ? 'vencido desde el ' + fdate(v.fecha, { day: 'numeric', month: 'short' }) : d === 0 ? 'vence hoy' : 'vence en ' + d + (d === 1 ? ' día' : ' días')}`); } for (const m of live('mant')) { if (m.proxKm && o && o >= num(m.proxKm) - 300) out.push(`${esc(m.servicio || 'Servicio')}: toca a los ${num(m.proxKm).toLocaleString('es-MX')} km (vas en ${o.toLocaleString('es-MX')})`); if (m.proxFecha && m.proxFecha <= t) out.push(`${esc(m.servicio || 'Servicio')}: fecha programada ${fdate(m.proxFecha)}`); } return [...new Set(out)].map(a => `<div class="alert">${ic(a[0] === '\u0001' ? 'cal' : 'wrench')}<span>${a.replace('\u0001', '')}</span></div>`).join(''); }
+function alerts() { const o = odo(), t = today(), out = []; for (const v of enCamino()) { const hrs = (Date.now() - num(v.createdAt)) / 36e5; if (v.createdAt && hrs >= 2) out.push(`\u0002${esc(v.lugar || 'Pedido')} lleva ${Math.floor(hrs)} h en camino: entrégalo o cancélalo`); } for (const v of vencList()) { const d = daysTo(v.fecha); if (d <= 15) out.push(`\u0001${esc(v.nombre || 'Documento')}: ${d < 0 ? 'vencido desde el ' + fdate(v.fecha, { day: 'numeric', month: 'short' }) : d === 0 ? 'vence hoy' : 'vence en ' + d + (d === 1 ? ' día' : ' días')}`); } for (const m of live('mant')) { if (m.proxKm && o && o >= num(m.proxKm) - 300) out.push(`${esc(m.servicio || 'Servicio')}: toca a los ${num(m.proxKm).toLocaleString('es-MX')} km (vas en ${o.toLocaleString('es-MX')})`); if (m.proxFecha && m.proxFecha <= t) out.push(`${esc(m.servicio || 'Servicio')}: fecha programada ${fdate(m.proxFecha)}`); } return [...new Set(out)].map(a => `<div class="alert">${ic(a[0] === '\u0001' ? 'cal' : a[0] === '\u0002' ? 'bag' : 'wrench')}<span>${a.replace(/^[\u0001\u0002]/, '')}</span></div>`).join(''); }
 function payTxt(c, v) { if (!v.pago || !PAGOS[v.pago]) return 'Sin forma de pago'; if (v.pago !== 'mixto' || !v.montos) return PAGOS[v.pago]; return 'Mixto: ' + K3.filter(k => num(v.montos[k])).map(k => PAGOS[k] + ' ' + $m(v.montos[k])).join(' + '); }
 
 /* Movimientos unificados (estilo estado de cuenta) */
@@ -328,6 +339,7 @@ function vInicio() {
   <div class="bal"><div><small>Dinero real de la semana</small><div class="big">${$h(w.real)}</div><small>${esc(fdate(weekStart(), { day: 'numeric', month: 'short' }))} – hoy · sin descontar Call Center</small></div>
   <div class="sub"><div><small>Hoy</small><b>${$h(h.real)}</b></div><div><small>Ganancia neta</small><b>${$h(w.neta)}</b></div></div></div>
   <div class="card mt ccrow"><div class="row" style="justify-content:flex-start"><span class="ico sq" style="background:var(--ambbg);color:var(--amb)">${ic('phone')}</span><div><div class="lbl">Call Center por pagar</div><b style="font-size:17px;color:var(--amb)">${$m(pend)}</b></div></div><button class="btn light" type="button" data-new="pagoscc">Abonar</button></div>
+  ${(() => { const d = new Date(); return d.getDay() === 0 && d.getHours() >= 14 && pend > 0.009 ? `<div class="alert" style="justify-content:space-between"><span style="display:flex;gap:10px;align-items:center">${ic('phone')}<span>Hoy es domingo: toca pagarle al Call Center <b>${$m(pend)}</b></span></span><button class="btn light" type="button" data-new="pagoscc" style="min-height:36px;padding:0 12px;font-size:13px">Abonar</button></div>` : ''; })()}
   ${bkBanner()}
   <div class="qa"><button type="button" data-new="recoger"><span class="b" style="color:var(--amb)">${ic('bag')}</span><span class="l">Recoger</span></button><button type="button" data-new="viaje"><span class="b" style="color:var(--link)">${ic('bike')}</span><span class="l">Viaje</span></button><button type="button" data-new="gasto"><span class="b" style="color:var(--bad)">${ic('out')}</span><span class="l">Gasto</span></button><button type="button" data-new="gasolina"><span class="b">${ic('fuel')}</span><span class="l">Gasolina</span></button></div>
   ${alerts()}
@@ -413,6 +425,7 @@ function vAcerca() {
   <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 18px"><img class="brand" src="logo-farav.jpg" alt="Grupo Farav" style="width:150px"><b style="font-size:24px">Control Pro</b><span class="lbl" style="font-size:14px">Versión ${VERSION}</span></div>
   <div class="card"><div class="kv"><span>Desarrollada por</span><b>Grupo Farav</b></div><div class="kv"><span>Propiedad de</span><b>Grupo Farav</b></div><div class="kv"><span>Cuenta</span><b style="max-width:60%;overflow:hidden;text-overflow:ellipsis">${esc(user && user.email)}</b></div><div class="kv"><span>Sincronización</span><b class="${!navigator.onLine || pend ? '' : 'gin'}">${!navigator.onLine ? 'Sin conexión' : pend ? 'Subiendo…' : 'Al día'}</b></div><div class="kv"><span>Último respaldo en Drive</span><b>${fd(bm.driveAt)}</b></div><div class="kv"><span>Última descarga</span><b>${fd(bm.localAt)}</b></div><div class="kv"><span>Registros</span><b>${DATA_COLS.reduce((a, c) => a + live(c).length, 0)}</b></div></div>
   <div class="card mt"><div class="sec"><b>Datos para cobrar</b><button type="button" data-act="cobro">${cobro().clabe ? 'Editar' : 'Agregar'}</button></div>${cobro().clabe ? `<div class="kv"><span>Banco</span><b>${esc(cobro().banco || '—')}</b></div><div class="kv"><span>CLABE</span><b>${esc(cobro().clabe)}</b></div>${cobro().titular ? `<div class="kv"><span>Titular</span><b>${esc(cobro().titular)}</b></div>` : ''}` : '<p class="hint">Agrega tu CLABE y se incluirá en el mensaje de WhatsApp al cliente.</p>'}</div>
+  <div class="card mt"><div class="sec"><b>Bloqueo con PIN</b><button type="button" data-act="pinset">${pinOn() ? 'Cambiar' : 'Activar'}</button></div><p class="hint">${pinOn() ? 'Activado: la app pide tu PIN al abrirla y al volver a ella después de 1 minuto.' : 'Pide un PIN de 4 números al abrir la app. Se guarda solo en este teléfono.'}</p></div>
   <div class="card mt"><div class="sec"><b>Respaldo y migración</b></div>
   <div style="display:flex;flex-direction:column;gap:8px"><button class="btn pri" type="button" data-act="drivebk">${ic('up')} Respaldar en Google Drive</button>${bm.driveFolderId ? `<a class="btn" href="https://drive.google.com/drive/folders/${encodeURIComponent(bm.driveFolderId)}" target="_blank" rel="noopener">Abrir carpeta en Drive</a>` : ''}<button class="btn" type="button" data-act="xls">${ic('dl')} Descargar Excel</button><button class="btn" type="button" data-act="json">${ic('dl')} Descargar respaldo (.json)</button><button class="btn" type="button" data-act="import">${ic('up')} Importar respaldo</button></div>
   <p class="hint">El respaldo en Drive guarda un .json (para restaurar) y un Excel en la carpeta “Respaldos Control Pro”. La app solo puede ver los archivos que ella crea. Importar acepta el respaldo de la app anterior (archivo .json o el texto de “Copiar respaldo”). Si un registro ya existe, se queda la versión más reciente.</p></div>
@@ -445,8 +458,8 @@ let renderLock = false;
 /* ---------- Formularios ---------- */
 const TIPOS = ['Servicio', 'Reparación', 'Compra de refacción', 'Otro'];
 const FORMS = {
-  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Pedido que pagaste (vacío si no pagaste)'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['costo', 'Costo del envío (opcional)', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
-  viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['tel', 'Teléfono del cliente (opcional)', 'tel'], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  recoger: { c: 'viajes', p: 'v', t: 'Recoger pedido', big: ['pedido', 'Pedido que pagaste (vacío si no pagaste)'], f: [['lugar', 'Lugar asignado / restaurante', 'lugar', 1], ['cliente', 'Cliente (opcional)', 'cli'], ['tel', 'Teléfono', 'tel'], ['dir', 'Dirección o ubicación del cliente (opcional)', 'dir'], ['costo', 'Costo del envío (opcional)', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
+  viaje: { c: 'viajes', p: 'v', t: 'Viaje', big: ['costo', 'Costo del viaje'], f: [['lugar', 'Lugar asignado', 'lugar', 1], ['cliente', 'Cliente (opcional)', 'cli'], ['tel', 'Teléfono', 'tel'], ['dir', 'Dirección o ubicación del cliente (opcional)', 'dir'], ['tips', 'Propina', 'number'], ['fecha', 'Fecha', 'date'], ['nota', 'Nota (opcional)', 'text']] },
   gasto: { c: 'viajes', p: 'v', t: 'Gasto', big: ['costo', 'Monto del gasto'], f: [['nota', 'Concepto', 'text'], ['fecha', 'Fecha', 'date']] },
   gasolina: { c: 'gasolina', p: 'g', t: 'Carga de gasolina', big: ['importe', 'Importe'], f: [['km', 'Kilometraje actual (km)', 'number', 1], ['litros', 'Litros cargados', 'number', 1], ['fecha', 'Fecha', 'date']] },
   mant: { c: 'mant', p: 'm', t: 'Servicio o refacción', big: ['precio', 'Precio unitario'], f: [['servicio', 'Servicio realizado / trabajo', 'text', 1], ['tipo', 'Tipo', 'tipo'], ['cantidad', 'Cantidad', 'number'], ['km', 'Kilometraje (km)', 'number'], ['fecha', 'Fecha', 'date'], ['producto', 'Producto o refacción', 'text'], ['proveedor', 'Taller / proveedor', 'text'], ['proxKm', 'Próximo servicio (km)', 'number'], ['proxFecha', 'Próxima fecha', 'date'], ['obs', 'Observaciones', 'text']] },
@@ -499,20 +512,43 @@ function saveCobro(del) {
   if (!clabeOk(clabe)) { document.getElementById('cerr').textContent = 'La CLABE no es válida: revisa que tenga 18 dígitos y estén bien.'; return; }
   save('meta', { ...cobro(), id: 'cobro', banco, clabe, titular }); closeSheet(); toast('Datos para cobrar guardados');
 }
+const fv = id => ((document.getElementById(id) || {}).value || '').trim();
+const saludo = () => { const hr = new Date().getHours(), s = hr < 12 ? 'buen día' : hr < 19 ? 'buenas tardes' : 'buenas noches', n = fv('f_cliente').split(/\s+/)[0]; return 'Hola' + (n ? ', ' + n : '') + ', ' + s + ' 👋'; };
+const deLugar = () => { const l = fv('f_lugar'); return l && !EXC.includes(norm(l)) ? ' de *' + l + '*' : ''; };
+function waSend(L) {
+  const tel = fv('f_tel'), n = waNum(tel);
+  if (tel && !n) { document.getElementById('ferr').textContent = 'Revisa el teléfono: deben ser 10 dígitos.'; return; }
+  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
+}
 function sendWA() {
-  const lugar = ((document.getElementById('f_lugar') || {}).value || '').trim(), ped = form.kind === 'recoger' ? gv('f_pedido') : pedNow(), env = gv('f_costo');
+  const ped = form.kind === 'recoger' ? gv('f_pedido') : pedNow(), env = gv('f_costo');
   if (!env) { document.getElementById('ferr').textContent = 'Escribe el costo del envío para mandar la cuenta.'; return; }
-  const hr = new Date().getHours(), sal = hr < 12 ? 'buen día' : hr < 19 ? 'buenas tardes' : 'buenas noches';
-  const L = ['Hola, ' + sal + ' 👋', 'Soy el repartidor asignado para entregar su pedido' + (lugar && !EXC.includes(norm(lugar)) ? ' de *' + lugar + '*.' : '.'), ''];
+  const L = [saludo(), 'Soy el repartidor asignado para entregar su pedido' + deLugar() + '.', ''];
   if (ped) L.push('Pedido: ' + $r(ped));
   if (env) L.push('Envío: ' + $r(env));
   L.push('*Total a pagar: ' + $r(ped + env) + '*', '', 'Puede pagar en efectivo, transferencia bancaria o tarjeta (con tarjeta se cobra comisión).');
   const cb = cobro(); if (cb.clabe) L.push('', '*Datos para transferencia:*', (cb.banco ? cb.banco + ' · ' : '') + 'CLABE ' + cb.clabe + (cb.titular ? '\nTitular: ' + cb.titular : ''));
   L.push('', '¡Gracias por su preferencia!');
-  const tel = (document.getElementById('f_tel') || {}).value || '', n = waNum(tel);
-  if (tel.trim() && !n) { document.getElementById('ferr').textContent = 'Revisa el teléfono: deben ser 10 dígitos.'; return; }
-  window.open('https://wa.me/' + n + '?text=' + encodeURIComponent(L.join('\n')), '_blank');
+  waSend(L);
 }
+const waCamino = () => waSend([saludo(), 'Soy el repartidor de su pedido' + deLugar() + '. Ya voy en camino 🛵, llego en unos minutos.']);
+const waLlegue = () => waSend(['Hola' + (fv('f_cliente') ? ', ' + fv('f_cliente').split(/\s+/)[0] : '') + ' 👋', 'Ya llegué con su pedido' + deLugar() + ', estoy afuera. 📍']);
+/* Clientes guardados (de viajes anteriores con teléfono) */
+function clientes() {
+  const m = {};
+  live('viajes').filter(v => waNum(v.tel)).sort((a, b) => num(a.createdAt) - num(b.createdAt)).forEach(v => { const k = waNum(v.tel), c = m[k] || (m[k] = { tel: String(v.tel).trim(), n: 0 }); c.n++; if (v.cliente) c.nombre = v.cliente; if (v.dir) c.dir = v.dir; c.tel = String(v.tel).trim(); });
+  return Object.values(m).sort((a, b) => b.n - a.n);
+}
+function cliChips() {
+  const box = document.getElementById('cliChips'); if (!box) return;
+  const qn = fold(fv('f_cliente')), qt = fv('f_tel').replace(/\D/g, '');
+  if (!qn && qt.length < 3) { box.innerHTML = ''; return; }
+  const l = clientes().filter(c => { const d = c.tel.replace(/\D/g, ''); if (qt.length >= 3 && d.includes(qt) && d !== qt) return true; return qn && c.nombre && fold(c.nombre).includes(qn) && fold(c.nombre) !== qn; }).slice(0, 4);
+  form.cl = l;
+  box.innerHTML = l.map((c, i) => `<button type="button" data-cli="${i}">${esc((c.nombre ? c.nombre + ' · ' : '') + c.tel)}</button>`).join('');
+}
+const mapsDest = d => { const u = String(d || '').match(/https?:\/\/\S+/); return u ? u[0] : d ? 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(d) + '&travelmode=driving' : ''; };
+const navBtn = d => d && String(d).trim() ? `<a class="btn wide" href="${esc(mapsDest(String(d).trim()))}" target="_blank" rel="noopener" style="margin-top:8px;color:var(--link)">${ic('nav')} Navegar con Google Maps</a>` : '';
 const fold = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 function lugChips(q) {
   const lug = (form && form.lug) || [], k = form && form.kind, f = fold(q);
@@ -580,10 +616,12 @@ function openForm(kind, id) {
     const v = esc(r[k] ?? '');
     if (t === 'tipo') return `<label for="f_${k}">${l}</label><select class="inp" id="f_${k}">${TIPOS.map(o => `<option${o === r[k] ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
     if (t === 'lugar') return `<label for="f_${k}">${l} *</label><input class="inp" id="f_${k}" value="${v}" autocomplete="off" autocapitalize="words" placeholder="Escribe y elige de la lista"><div class="chips" id="lugChips" style="margin-top:8px">${lugChips(r[k] || '')}</div>`;
-    if (t === 'tel') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" type="tel" inputmode="tel" autocomplete="off" value="${v}" placeholder="10 dígitos · para mandarle WhatsApp">`;
+    if (t === 'tel') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" type="tel" inputmode="tel" autocomplete="off" value="${v}" placeholder="10 dígitos">`;
+    if (t === 'cli') return `<label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" autocapitalize="words" value="${v}" placeholder="Nombre">`;
+    if (t === 'dir') return `<div class="chips" id="cliChips" style="margin-top:8px"></div><label for="f_${k}">${l}</label><input class="inp" id="f_${k}" autocomplete="off" value="${v}" placeholder="Pega aquí la ubicación que te mandó o escribe la dirección"><div id="navBox">${navBtn(r[k])}</div>`;
     return `<label for="f_${k}">${l}${req ? ' *' : ''}</label><input class="inp" id="f_${k}" type="${t === 'number' ? 'number' : t}" ${t === 'number' ? 'inputmode="decimal" step="any"' : ''} value="${v}">`;
   };
-  const pairs = { viaje: [['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
+  const pairs = { recoger: [['cliente', 'tel']], viaje: [['cliente', 'tel'], ['tips', 'fecha']], gasolina: [['km', 'litros']], mant: [['tipo', 'cantidad'], ['km', 'fecha'], ['proxKm', 'proxFecha']] }[kind] || [];
   const paired = new Set(pairs.flat());
   let body = '';
   for (const f of F0.f) { if (paired.has(f[0])) { const p = pairs.find(p => p[0] === f[0]); if (p) body += `<div class="g2"><div>${fld(F0.f.find(x => x[0] === p[0]))}</div><div>${fld(F0.f.find(x => x[0] === p[1]))}</div></div>`; continue; } body += fld(f); }
@@ -601,7 +639,7 @@ function openForm(kind, id) {
   ${entregar ? `<div class="note" style="margin-bottom:6px"><span style="color:var(--amb)">${ic('bag')}</span><span>${esc(r.lugar || 'Pedido')}${hasPed(r) ? ' · adelantaste ' + $m(r.pedido) + ' en ' + esc((PAGOS[r.pedidoPago] || '').toLowerCase()) : ' · sin pedido adelantado'}</span></div>` : ''}
   <div class="amtbox"><label for="f_${F0.big[0]}">${F0.big[1]}</label><input id="f_${F0.big[0]}" type="number" inputmode="decimal" step="any" placeholder="$0" value="${esc(r[F0.big[0]] ?? '')}">${kind === 'viaje' ? '<span class="tag t-amb" id="ccTag"></span>' : ''}</div>
   ${body}${payBlock}${kind === 'viaje' ? gpsNote(r, entregar ? 'entregar' : 'viaje', id) : ''}
-  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button>` : ''}
+  ${kind === 'viaje' || kind === 'recoger' ? `<button class="btn wide wa" type="button" data-act="wa" style="margin-top:12px">${ic('wa')} Mandar cuenta por WhatsApp</button><div class="wa2"><button class="btn wa" type="button" data-act="wacam">🛵 Voy en camino</button><button class="btn wa" type="button" data-act="wallegue">📍 Ya llegué</button></div>` : ''}
   <p class="hint" id="ferr" style="color:var(--bad)"></p>
   <button class="btn wide pri" type="submit" style="margin-top:14px">${saveTxt}</button>
   ${!id && kind === 'viaje' ? '<button class="btn wide" type="button" data-act="savemore" style="margin-top:8px">Guardar y registrar otro</button>' : ''}
@@ -672,7 +710,7 @@ async function buildXLS() {
   const X = await loadXLSX();
   const by = c => live(c).sort((a, b) => String(a.fecha).localeCompare(b.fecha) || num(a.createdAt || a.updatedAt) - num(b.createdAt || b.updatedAt));
   const wb = X.utils.book_new(), add = (n, rows) => X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(rows), n);
-  add('Viajes', [['Fecha', 'Estado', 'Costo del viaje', 'Pago Call Center', 'Tips', 'Lugar asignado', 'Nota', 'Pedido adelantado', 'Pedido pagado con', 'Cobrado al cliente', 'Diferencia', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta', 'Km recorrido', 'Teléfono cliente']].concat(by('viajes').map(v => [v.fecha, isG(v) ? 'Gasto' : { camino: 'En camino', cancelado: 'Cancelado' }[st(v)] || 'Entregado', num(v.costo), isG(v) || !done(v) ? '' : ccOf(v), num(v.tips) || '', v.lugar || '', v.nota || '', hasPed(v) ? num(v.pedido) : '', hasPed(v) ? PAGOS[v.pedidoPago] || '' : '', hasPed(v) && done(v) ? recTot('viajes', v) : '', hasPed(v) && done(v) ? +difOf(v).toFixed(2) : '', ...(done(v) || isG(v) ? pagoCols('viajes', v) : ['', '', '', '']), num(v.km) || '', v.tel || ''])));
+  add('Viajes', [['Fecha', 'Estado', 'Costo del viaje', 'Pago Call Center', 'Tips', 'Lugar asignado', 'Nota', 'Pedido adelantado', 'Pedido pagado con', 'Cobrado al cliente', 'Diferencia', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta', 'Km recorrido', 'Cliente', 'Teléfono cliente', 'Dirección cliente']].concat(by('viajes').map(v => [v.fecha, isG(v) ? 'Gasto' : { camino: 'En camino', cancelado: 'Cancelado' }[st(v)] || 'Entregado', num(v.costo), isG(v) || !done(v) ? '' : ccOf(v), num(v.tips) || '', v.lugar || '', v.nota || '', hasPed(v) ? num(v.pedido) : '', hasPed(v) ? PAGOS[v.pedidoPago] || '' : '', hasPed(v) && done(v) ? recTot('viajes', v) : '', hasPed(v) && done(v) ? +difOf(v).toFixed(2) : '', ...(done(v) || isG(v) ? pagoCols('viajes', v) : ['', '', '', '']), num(v.km) || '', v.cliente || '', v.tel || '', v.dir || ''])));
   const days = [...new Set(live('viajes').map(v => v.fecha).concat(live('gasolina').map(g => g.fecha)))].filter(Boolean).sort();
   add('Resumen diario', [['Fecha', 'Pedidos', 'Ingresos', 'Propinas', 'Gasolina', 'Gastos', 'Pérdidas en pedidos', 'Dinero real', 'Call Center', 'Ganancia neta', 'Fondo fijo', 'Efectivo en mano']].concat(days.map(d => { const x = sumDay(live('viajes').filter(v => v.fecha === d), gasOn(d)), c = caja(d); return [d, x.p, x.ing, x.tip, x.gl, x.gas, x.perd, x.real, x.cc, x.neta, c.fondo, c.mano]; })));
   add('Gasolina', [['Fecha', 'Kilometraje', 'Litros', 'Importe', 'Km recorridos', 'km/L', 'Costo por km', 'Forma de pago', 'Efectivo', 'Transferencia', 'Tarjeta']].concat(gasRows().map(r => [r.fecha, num(r.km), num(r.litros), num(r.importe), r.kmr ?? '', r.rend ? +r.rend.toFixed(2) : '', r.cpk ? +r.cpk.toFixed(3) : '', ...pagoCols('gasolina', r)])));
@@ -801,6 +839,8 @@ document.addEventListener('click', async e => {
   if (d.entregar) { if (S.viajes[d.entregar]) openForm('viaje', d.entregar); return; }
   if (d.ppay) { form.ppay = d.ppay; try { localStorage.setItem('cp_ppay', d.ppay); } catch (x) {} updForm(); return; }
   if (d.pay) { form.pay = d.pay; try { localStorage.setItem('cp_pay', d.pay); } catch (x) {} updForm(); return; }
+  if (d.cli != null && form && form.cl) { const c = form.cl[+d.cli]; if (c) { if (c.nombre) document.getElementById('f_cliente').value = c.nombre; document.getElementById('f_tel').value = c.tel; const di = document.getElementById('f_dir'); if (di && !di.value && c.dir) { di.value = c.dir; document.getElementById('navBox').innerHTML = navBtn(c.dir); } document.getElementById('cliChips').innerHTML = ''; } return; }
+  if (d.pk != null) { pinKey(d.pk); return; }
   if (d.venc) { if (S.venc[d.venc]) openVenc(d.venc); return; }
   if (d.vchip) { document.getElementById('v_nombre').value = d.vchip; return; }
   if (d.chip) { document.getElementById('f_lugar').value = d.chip; document.getElementById('lugChips').innerHTML = lugChips(d.chip); updForm(); return; }
@@ -820,6 +860,12 @@ document.addEventListener('click', async e => {
     case 'vrenew': saveVenc(true); break;
     case 'vdel': { if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para eliminar'; return; } const prev = { ...S.venc[form.id] }; save('venc', { ...prev, deleted: true }); closeSheet(); toast('Vencimiento eliminado', () => save('venc', { ...prev, deleted: false })); break; }
     case 'wa': sendWA(); break;
+    case 'wacam': waCamino(); break;
+    case 'wallegue': waLlegue(); break;
+    case 'pinset': openPin(); break;
+    case 'pinsave': savePin(); break;
+    case 'pinoff': if (!form.del) { form.del = true; b.textContent = 'Toca otra vez para quitar el PIN'; return; } pinClear(); closeSheet(); toast('Bloqueo con PIN desactivado'); break;
+    case 'pinforgot': pinClear(); unlock(); A.signOut(auth); toast('Entra con Google y vuelve a crear tu PIN'); break;
     case 'cobro': openCobro(); break;
     case 'csave': saveCobro(false); break;
     case 'cdel': saveCobro(true); break;
@@ -836,8 +882,8 @@ document.addEventListener('click', async e => {
 });
 function closeIfOpen() { if (document.getElementById('sheet').classList.contains('open')) { document.getElementById('sheet').classList.remove('open'); renderLock = false; form = null; } }
 document.getElementById('sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
-document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } else if (e.target.id === 'cfrm') { e.preventDefault(); saveCobro(false); } });
-document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
+document.addEventListener('submit', e => { if (e.target.id === 'frm') { e.preventDefault(); submitForm(false); } else if (e.target.id === 'vfrm') { e.preventDefault(); saveVenc(false); } else if (e.target.id === 'cfrm') { e.preventDefault(); saveCobro(false); } else if (e.target.id === 'pfrm') { e.preventDefault(); savePin(); } });
+document.addEventListener('input', e => { if (!form) return; if (e.target.id === 'f_lugar') { const c = document.getElementById('lugChips'); if (c) c.innerHTML = lugChips(e.target.value); } if (e.target.id === 'f_cliente' || e.target.id === 'f_tel') cliChips(); if (e.target.id === 'f_dir') { const nb = document.getElementById('navBox'); if (nb) nb.innerHTML = navBtn(e.target.value); } if (e.target.id === 'f_cobrado') form.cobEdited = e.target.value !== ''; if ((e.target.id || '').match(/^(f_|m_)/)) updForm(); });
 document.addEventListener('change', e => {
   if (e.target.id === 'dayIn' && e.target.value) { dayView = e.target.value; render(); }
   if (e.target.id === 'fondoIn') { const dd = e.target.dataset.d, v = e.target.value === '' ? 0 : num(e.target.value); if (v === fondoOf(dd)) return; save('fondos', { ...(S.fondos[dd] || {}), id: dd, fecha: dd, monto: v }); toast('Fondo fijo guardado'); }
@@ -872,10 +918,48 @@ A.getRedirectResult(auth).then(res => {
   const cred = A.GoogleAuthProvider.credentialFromResult(res);
   if (cred && cred.accessToken) { keepToken(cred.accessToken); const go = () => { if (user && COLS.every(c => meta[c].got)) driveUpload(cred.accessToken); else setTimeout(go, 400); }; go(); }
 }).catch(e => { if (sessionStorage.getItem('cp_drive_pending') === '1') { sessionStorage.removeItem('cp_drive_pending'); driveErr(e); } else if (e && e.code) loginError(e); });
+/* ---------- Bloqueo con PIN (solo en este teléfono) ---------- */
+const pinOn = () => { try { return !!(user && localStorage.getItem('cp_pin_' + user.uid)); } catch (e) { return false; } };
+const pinHash = async p => { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('cp:' + user.uid + ':' + p)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); };
+const pinClear = () => { try { if (user) localStorage.removeItem('cp_pin_' + user.uid); } catch (e) {} };
+let pinBuf = '', hiddenAt = 0;
+function lock() {
+  if (!pinOn() || document.getElementById('lockScr')) return;
+  pinBuf = ''; const d = document.createElement('div'); d.className = 'lock'; d.id = 'lockScr';
+  d.innerHTML = `<img src="icon-192.png" alt="" style="width:72px;height:72px;border-radius:18px"><b style="font-size:18px">Escribe tu PIN</b><div class="dots">${'<i></i>'.repeat(4)}</div><div class="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-pk="${n}">${n}</button>`).join('')}<span></span><button type="button" data-pk="0">0</button><button type="button" class="nb" data-pk="x">⌫</button></div><button type="button" class="btn" data-act="pinforgot" style="background:none;border:0;color:var(--mute);font-size:13px">Olvidé mi PIN · entrar con Google</button><div style="position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));font-size:11px;color:var(--dim)">Control Pro · © 2026 Grupo Farav</div>`;
+  document.body.appendChild(d);
+}
+const unlock = () => { const d = document.getElementById('lockScr'); if (d) d.remove(); pinBuf = ''; };
+async function pinKey(k) {
+  const d = document.getElementById('lockScr'); if (!d) return;
+  if (k === 'x') pinBuf = pinBuf.slice(0, -1); else if (pinBuf.length < 4) pinBuf += k;
+  d.querySelectorAll('.dots i').forEach((el, i) => el.classList.toggle('f', i < pinBuf.length));
+  if (pinBuf.length === 4) {
+    const ok = (await pinHash(pinBuf)) === localStorage.getItem('cp_pin_' + user.uid);
+    if (ok) unlock(); else { d.classList.add('bad'); setTimeout(() => { d.classList.remove('bad'); pinBuf = ''; d.querySelectorAll('.dots i').forEach(el => el.classList.remove('f')); }, 400); if (navigator.vibrate) navigator.vibrate(120); }
+  }
+}
+function openPin() {
+  form = { kind: 'pin', del: false };
+  openPanel(`<form id="pfrm" novalidate><div class="ph"><b>${pinOn() ? 'Cambiar PIN' : 'Activar bloqueo con PIN'}</b><button class="ibtn" type="button" data-act="close" aria-label="Cerrar" style="border:0;background:none">${ic('x')}</button></div>
+  <label for="p1">PIN nuevo (4 números)</label><input class="inp" id="p1" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+  <label for="p2">Repite el PIN</label><input class="inp" id="p2" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+  <p class="hint">Se guarda solo en este teléfono. Si lo olvidas, entras otra vez con tu cuenta de Google y creas uno nuevo; tus datos no se pierden.</p><p class="hint" id="perr" style="color:var(--bad)"></p>
+  <button class="btn wide pri" type="button" data-act="pinsave" style="margin-top:14px">Guardar PIN</button>${pinOn() ? '<button class="btn wide dng" type="button" data-act="pinoff" style="margin-top:8px">Quitar bloqueo</button>' : ''}</form>`);
+}
+async function savePin() {
+  const a = document.getElementById('p1').value, b = document.getElementById('p2').value;
+  if (!/^\d{4}$/.test(a)) { document.getElementById('perr').textContent = 'El PIN debe tener 4 números.'; return; }
+  if (a !== b) { document.getElementById('perr').textContent = 'Los dos PIN no coinciden.'; return; }
+  try { localStorage.setItem('cp_pin_' + user.uid, await pinHash(a)); } catch (e) { document.getElementById('perr').textContent = 'No se pudo guardar en este teléfono.'; return; }
+  closeSheet(); toast('Bloqueo con PIN activado');
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 60000) lock(); });
+
 A.onAuthStateChanged(auth, u => {
   user = u;
   if (!u) { unsubs.forEach(x => x()); unsubs = []; COLS.forEach(c => { S[c] = {}; }); document.getElementById('app').innerHTML = vLogin(lastErr); return; }
-  subscribe(); render();
+  subscribe(); render(); lock();
   if (navigator.onLine) setTimeout(() => loadGIS().catch(() => {}), 1500);
   setTimeout(routePending, 6000);
 });
